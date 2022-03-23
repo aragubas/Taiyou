@@ -6,7 +6,11 @@ import GlobalMenu from "./components/GlobalMenu.vue";
 </script>
 
 <template>
-  <TaiyouWindow><GlobalMenu></GlobalMenu></TaiyouWindow>
+  <main id="windows-container">
+    <GlobalMenu></GlobalMenu>
+    <TaiyouWindow><h1>Test</h1></TaiyouWindow>
+    <TaiyouWindow><h1>More Test</h1></TaiyouWindow>
+  </main>
 </template>
 
 <style>

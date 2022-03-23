@@ -25,14 +25,6 @@ export default defineComponent({
       <li>Help</li>
     </ul>
   </nav>
-  skskskskskskskskskskskskskksskskskskksksksksksksksksksksksksksksksksksk
-  skskskskskskskskskskskskskksskskskskksksksksksksksksksksksksksksksksksk
-  skskskskskskskskskskskskskksskskskskksksksksksksksksksksksksksksksksksk
-  skskskskskskskskskskskskskksskskskskksksksksksksksksksksksksksksksksksk
-  skskskskskskskskskskskskskksskskskskksksksksksksksksksksksksksksksksksk
-  skskskskskskskskskskskskskksskskskskksksksksksksksksksksksksksksksksksk
-  skskskskskskskskskskskskskksskskskskksksksksksksksksksksksksksksksksksk
-  skskskskskskskskskskskskskksskskskskksksksksksksksksksksksksksksksksksk
 </template>
 
 <style scoped>
