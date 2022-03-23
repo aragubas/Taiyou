@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { getCurrentInstance, Ref, ref } from "vue";
-import { focusWindow } from "../window-manager";
+import { focusedWindow, focusWindow } from "../window-manager";
 
 let title = ref("Sinas");
 let left = ref(50);
 let top = ref(50);
 let width = ref(400);
 let height = ref(300);
-let focused = ref(true);
-let parent = getCurrentInstance();
 
 const props = defineProps<{ windowID: string }>();
 
@@ -47,7 +45,7 @@ function mouseMove(event: MouseEvent) {
 
 function mouseDown(event: MouseEvent) {
   event.preventDefault();
-
+  focus();
   mouseCapture.value = true;
   mouseInitialX = event.x - left.value;
   mouseInitialY = event.y - top.value;
@@ -55,7 +53,6 @@ function mouseDown(event: MouseEvent) {
 
 function mouseUp(event: MouseEvent) {
   event.preventDefault();
-  focusWindow(props.windowID);
   dragEnd();
 }
 
@@ -66,13 +63,7 @@ function dragEnd() {
 }
 
 function focus() {
-  // console.log(windowID.value);
-  // focusWindow(windowID.value);
-  focused.value = true;
-}
-
-function unfocus() {
-  focused.value = false;
+  focusWindow(props.windowID);
 }
 </script>
 
@@ -85,9 +76,11 @@ function unfocus() {
       height: height + 'px',
     }"
     class="window-container"
-    :class="[mouseCapture ? 'grab' : '', focused ? 'focused' : '']"
-    v-on:mouseleave="unfocus()"
-    v-on:mouseenter="focus()"
+    :class="[
+      mouseCapture ? 'grab' : '',
+      focusedWindow == props.windowID ? 'focused' : '',
+    ]"
+    @click="focus"
   >
     <header>
       <div
@@ -108,26 +101,41 @@ function unfocus() {
     <main>
       <slot />
     </main>
+
+    <span class="resize-handle">...</span>
   </div>
 </template>
 
 <style scoped>
 .window-container {
-  transition: box-shadow 0.25s ease, border-radius 0.25s ease,
-    background 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  transition: border-radius 0.25s ease;
   position: absolute;
   background: rgb(48, 50, 56);
-  box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 0px 1px black;
+  border-radius: 2px;
+  color: lightgray;
 }
 
 .grab {
   will-change: top, left, width, height, transform;
 }
 
+.resize-handle {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  font-size: 0.7rem;
+  user-select: none;
+  color: rgba(255, 255, 255, 0.5);
+}
+
 .focused {
-  box-shadow: 0px 0px 1px black;
+  box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.8);
   border-radius: 5px;
   background: rgb(50, 52, 58);
+  color: white;
 }
 
 main {
@@ -136,6 +144,7 @@ main {
   width: 100%;
   height: calc(100% - 1.5rem);
   overflow: auto;
+  user-select: initial;
 }
 
 .window-header {
@@ -144,6 +153,7 @@ main {
   align-items: center;
   height: 1.5rem;
   padding: 0 0.3rem;
+  user-select: none;
 }
 
 .window-actions {
@@ -156,7 +166,7 @@ main {
   align-items: center;
   width: 1rem;
   height: 1rem;
-  color: rgb(220, 220, 220);
+  color: lightgray;
 }
 
 .window-button:hover {
