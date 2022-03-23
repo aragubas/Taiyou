@@ -10,19 +10,23 @@ let height = ref(300);
 
 const props = defineProps<{ windowID: string }>();
 
-let mouseCapture = ref(false);
-let mouseInitialX = 0;
-let mouseInitialY = 0;
+let moveMouseCapture = ref(false);
+let moveMouseInitialX = 0;
+let moveMouseInitialY = 0;
 
-function mouseMove(event: MouseEvent) {
+let resizeMouseCapture = ref(false);
+let resizeMouseInitialX = 0;
+let resizeMouseInitialY = 0;
+
+function moveMouseMove(event: MouseEvent) {
   if ((event.buttons || event.button) != 1) {
-    dragEnd();
+    moveEnd();
     return;
   }
 
-  if (mouseCapture.value) {
-    left.value = event.x - mouseInitialX;
-    top.value = event.y - mouseInitialY;
+  if (moveMouseCapture.value) {
+    left.value = event.x - moveMouseInitialX;
+    top.value = event.y - moveMouseInitialY;
   }
 
   // Keep window inside viewport
@@ -43,23 +47,61 @@ function mouseMove(event: MouseEvent) {
   }
 }
 
-function mouseDown(event: MouseEvent) {
+function moveMouseDown(event: MouseEvent) {
   event.preventDefault();
   focus();
-  mouseCapture.value = true;
-  mouseInitialX = event.x - left.value;
-  mouseInitialY = event.y - top.value;
+  moveMouseCapture.value = true;
+  moveMouseInitialX = event.x - left.value;
+  moveMouseInitialY = event.y - top.value;
+
+  document.addEventListener("mousemove", moveMouseMove);
 }
 
-function mouseUp(event: MouseEvent) {
+function moveMouseUp(event: MouseEvent) {
   event.preventDefault();
-  dragEnd();
+  moveEnd();
 }
 
-function dragEnd() {
-  mouseCapture.value = false;
-  mouseInitialX = 0;
-  mouseInitialY = 0;
+function moveEnd() {
+  moveMouseCapture.value = false;
+  moveMouseInitialX = 0;
+  moveMouseInitialY = 0;
+
+  document.removeEventListener("mousemove", moveMouseMove);
+}
+
+function resizeMouseMove(event: MouseEvent) {
+  if ((event.buttons || event.button) != 1) {
+    resizeEnd();
+    return;
+  }
+
+  if (resizeMouseCapture.value) {
+    width.value = event.x - left.value - resizeMouseInitialX;
+    height.value = event.y - top.value - resizeMouseInitialY;
+  }
+}
+
+function resizeMouseDown(event: MouseEvent) {
+  event.preventDefault();
+  focus();
+  resizeMouseCapture.value = true;
+  resizeMouseInitialX = event.x - (left.value + width.value);
+  resizeMouseInitialY = event.y - (top.value + height.value);
+
+  document.addEventListener("mousemove", resizeMouseMove);
+}
+
+function resizeMouseUp(event: MouseEvent) {
+  event.preventDefault();
+  resizeEnd();
+}
+
+function resizeEnd() {
+  resizeMouseCapture.value = false;
+  resizeMouseInitialX = 0;
+  resizeMouseInitialY = 0;
+  document.removeEventListener("mousemove", resizeMouseMove);
 }
 
 function focus() {
@@ -77,7 +119,7 @@ function focus() {
     }"
     class="window-container"
     :class="[
-      mouseCapture ? 'grab' : '',
+      moveMouseCapture ? 'grab' : '',
       focusedWindow == props.windowID ? 'focused' : '',
     ]"
     @click="focus"
@@ -85,9 +127,8 @@ function focus() {
     <header>
       <div
         class="window-header"
-        @mousemove="mouseMove"
-        @mousedown="mouseDown"
-        @mouseup="mouseUp"
+        @mousedown="moveMouseDown"
+        @mouseup="moveMouseUp"
       >
         <p>{{ title }}</p>
         <div class="window-actions">
@@ -102,7 +143,12 @@ function focus() {
       <slot />
     </main>
 
-    <span class="resize-handle">...</span>
+    <span
+      class="resize-handle"
+      @mousedown="resizeMouseDown"
+      @mouseup="resizeMouseUp"
+      >...</span
+    >
   </div>
 </template>
 
