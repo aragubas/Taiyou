@@ -28,23 +28,7 @@ function moveMouseMove(event: MouseEvent) {
     left.value = event.x - moveMouseInitialX;
     top.value = event.y - moveMouseInitialY;
   }
-
-  // Keep window inside viewport
-  if (left.value < 0) {
-    left.value = 0;
-  }
-
-  if (left.value + width.value >= event.view!.innerWidth) {
-    left.value = event.view!.innerWidth - width.value;
-  }
-
-  if (top.value < 0) {
-    top.value = 0;
-  }
-
-  if (top.value + height.value >= event.view!.innerHeight) {
-    top.value = event.view!.innerHeight - height.value;
-  }
+  constrainPosition(event);
 }
 
 function moveMouseDown(event: MouseEvent) {
@@ -80,6 +64,8 @@ function resizeMouseMove(event: MouseEvent) {
     width.value = event.x - left.value - resizeMouseInitialX;
     height.value = event.y - top.value - resizeMouseInitialY;
   }
+
+  constrainPosition(event);
 }
 
 function resizeMouseDown(event: MouseEvent) {
@@ -95,6 +81,36 @@ function resizeMouseDown(event: MouseEvent) {
 function resizeMouseUp(event: MouseEvent) {
   event.preventDefault();
   resizeEnd();
+}
+
+function constrainPosition(event: MouseEvent) {
+  // Keep window inside viewport
+  if (!resizeMouseCapture.value) {
+    if (left.value < 0) {
+      left.value = 0;
+    }
+
+    if (left.value + width.value >= event.view!.innerWidth) {
+      left.value = event.view!.innerWidth - width.value;
+    }
+
+    if (top.value < 0) {
+      top.value = 0;
+    }
+
+    if (top.value + height.value >= event.view!.innerHeight) {
+      top.value = event.view!.innerHeight - height.value;
+    }
+  } else {
+    // Keep window inside parent
+    if (left.value + width.value > event.view!.innerWidth) {
+      width.value = event.view!.innerWidth - left.value;
+    }
+
+    if (top.value + height.value > event.view!.innerHeight) {
+      height.value = event.view!.innerHeight - top.value;
+    }
+  }
 }
 
 function resizeEnd() {
