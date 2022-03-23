@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getCurrentInstance, Ref, ref } from "vue";
+import { focusWindow } from "../window-manager";
 
 let title = ref("Sinas");
 let left = ref(50);
@@ -8,6 +9,8 @@ let width = ref(400);
 let height = ref(300);
 let focused = ref(true);
 let parent = getCurrentInstance();
+
+const props = defineProps<{ windowID: string }>();
 
 let mouseCapture = ref(false);
 let mouseInitialX = 0;
@@ -42,8 +45,6 @@ function mouseMove(event: MouseEvent) {
   }
 }
 
-// document.onmousedown;
-
 function mouseDown(event: MouseEvent) {
   event.preventDefault();
 
@@ -54,6 +55,7 @@ function mouseDown(event: MouseEvent) {
 
 function mouseUp(event: MouseEvent) {
   event.preventDefault();
+  focusWindow(props.windowID);
   dragEnd();
 }
 
@@ -64,6 +66,8 @@ function dragEnd() {
 }
 
 function focus() {
+  // console.log(windowID.value);
+  // focusWindow(windowID.value);
   focused.value = true;
 }
 
