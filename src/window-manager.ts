@@ -6,6 +6,7 @@ export let focusedWindow = ref("");
 export class WindowInstance {
   id: string = "";
   title: string = "";
+  componentPath: string = "";
   minimized: boolean = false;
   width: number = 400;
   height: number = 320;
@@ -14,9 +15,9 @@ export class WindowInstance {
   left: number = 0;
   top: number = 0;
   globalMenu: GlobalMenuInstance | undefined = undefined;
-  onClose: () => void = () => {};
-  onMinimize: () => void = () => {};
-  onRestore: () => void = () => {};
+  onClose: () => void | undefined = () => {};
+  onMinimize: () => void | undefined = () => {};
+  onRestore: () => void | undefined = () => {};
 
   minimize() {
     this.minimized = true;
@@ -42,13 +43,14 @@ export class WindowInstance {
 
 interface WindowFactoryProperties {
   title: string;
+  componentPath: string;
   width?: number;
   height?: number;
   minWidth?: number;
   minHeight?: number;
-  onClose: () => void;
-  onMinimize: () => void;
-  onRestore: () => void;
+  onClose?: () => void;
+  onMinimize?: () => void;
+  onRestore?: () => void;
 }
 
 let Sinas: Ref<Array<WindowInstance>> = ref(Array<WindowInstance>());
@@ -62,20 +64,23 @@ export function createWindow(properties: WindowFactoryProperties): string {
   let newWindowId = v4();
   newWindow.id = newWindowId;
   newWindow.title = properties.title;
-  newWindow.onClose = properties.onClose;
-  newWindow.onMinimize = properties.onMinimize;
-  newWindow.onRestore = properties.onRestore;
+
+  if (properties.onClose) {
+    newWindow.onClose = properties.onClose;
+  }
+  if (properties.onMinimize) {
+    newWindow.onMinimize = properties.onMinimize;
+  }
+  if (properties.onRestore) {
+    newWindow.onRestore = properties.onRestore;
+  }
+
+  newWindow.componentPath = properties.componentPath;
   if (properties.width) {
     newWindow.width = properties.width;
   }
 
-  newWindow.globalMenu = new GlobalMenuInstance();
-  newWindow.globalMenu.id = newWindowId;
-  newWindow.globalMenu.items = [
-    new GlobalMenuItem(),
-    new GlobalMenuItem(),
-    new GlobalMenuItem(),
-  ];
+  newWindow.globalMenu = new GlobalMenuInstance(newWindowId);
 
   Sinas.value.push(newWindow);
   // Focus newly created window

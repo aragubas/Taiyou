@@ -1,20 +1,19 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { defineAsyncComponent, onMounted } from "vue";
 import {
-  focusedWindow,
-  destroyWindow,
   focusWindow,
   getInstance,
+  focusedWindow,
+  destroyWindow,
 } from "../window-manager";
-
-// let left = ref(50);
-// let top = ref(50);
 
 const props = defineProps<{ windowID: string }>();
 
 let moveMouseCapture = false;
 let moveMouseInitialX = 0;
 let moveMouseInitialY = 0;
+/* @vite-ignore */
+let component = defineAsyncComponent(() => import(getWindow().componentPath));
 
 let resizeMouseCapture = false;
 let resizeMouseInitialX = 0;
@@ -205,7 +204,7 @@ function focus() {
     </header>
 
     <main :id="'taiyouwindow-' + windowID">
-      <slot />
+      <component :is="component" :windowID="windowID" />
     </main>
 
     <span
@@ -228,6 +227,7 @@ function focus() {
   border-radius: 6px;
   color: lightgray;
   /* opacity: 1; */
+  overflow: hidden;
 }
 .focused {
   box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.8);
@@ -246,7 +246,7 @@ function focus() {
   right: 1px;
   font-size: 0.7rem;
   user-select: none;
-  color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
   cursor: se-resize;
 }
 
@@ -254,11 +254,12 @@ main {
   position: relative;
   background: inherit;
   width: 100%;
-  height: calc(100% - 1.5rem);
+  height: 100%;
   overflow: auto;
   user-select: initial;
   border-bottom-right-radius: 6px;
   border-bottom-left-radius: 6px;
+  padding: 0 !important;
 }
 
 main::-webkit-scrollbar {

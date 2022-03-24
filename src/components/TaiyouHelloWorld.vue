@@ -1,33 +1,20 @@
 <script setup lang="ts">
-import { getCurrentInstance, getCurrentScope, onMounted, ref } from "vue";
-import { createWindow, getInstance, WindowInstance } from "../window-manager";
+import { onActivated, onMounted } from "@vue/runtime-core";
+import { getInstance } from "../window-manager";
 
-const window = ref("");
-
-function onClose() {}
-function onMinimize() {}
-function onRestore() {}
-function windowInstance(): WindowInstance {
-  return getInstance(window.value)!;
-}
+const props = defineProps<{ windowID: string }>();
 
 onMounted(() => {
-  window.value = createWindow({
-    title: `Welcome${Math.random() * 15}`,
-    onClose,
-    onMinimize,
-    onRestore,
-  });
+  getInstance(props.windowID).title = "sinas do caldo de pilha";
 });
 </script>
 
 <template>
-  <Teleport :to="'#' + window" v-if="window != ''">
-    <main>
-      <h1>Welcome to Taiyou</h1>
-      <p>Cloud-Storage and cloud-computing with virtual desktop environment!</p>
-    </main>
-  </Teleport>
+  <main>
+    <h1>Welcome to Taiyou</h1>
+    <p>Cloud-Storage and cloud-computing with virtual desktop environment!</p>
+    <code>{{ props.windowID }}</code>
+  </main>
 </template>
 
 <style scoped>

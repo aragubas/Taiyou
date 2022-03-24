@@ -51,16 +51,18 @@ ul {
 }
 
 .button {
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
   display: block;
   background-color: rgba(40, 42, 48, 0.5);
   padding: 0.5rem;
   user-select: none;
   overflow: hidden;
   text-overflow: ellipsis;
+  border-radius: 4px;
 }
 
 .button[minimized="true"] {
   background-color: rgba(20, 22, 34, 0.5);
+  color: rgba(255, 255, 255, 0.5);
 }
 </style>
