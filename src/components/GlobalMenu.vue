@@ -1,24 +1,32 @@
 <script setup lang="ts">
+import { reactive } from "@vue/reactivity";
 import { GlobalMenuInstance } from "../global-menu";
 import { focusedWindow, getInstance, WindowInstance } from "../window-manager";
 
-function getFocusedWindow(): GlobalMenuInstance | undefined {
-  return getInstance(focusedWindow.value).globalMenu;
+function getFocusedWindow(): WindowInstance | undefined {
+  return getInstance(focusedWindow.value);
 }
 </script>
 
 <template>
-  <div v-if="getInstance(focusedWindow) != undefined">
-    <nav v-for="item in getFocusedWindow()?.items" :key="item.id">
-      <p>{{ item.text }}</p>
-    </nav>
+  <div class="container">
+    <div>
+      <ul v-if="!getFocusedWindow()?.minimized">
+        <li
+          v-for="item in getFocusedWindow()?.globalMenu?.items"
+          :key="item.id"
+        >
+          <a>{{ item.text }}</a>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <style scoped>
-nav {
+.container {
   display: flex;
-  justify-content: space-between;
+  /* justify-content: space-between; */
   align-items: center;
   height: 1.2rem;
   font-size: 0.8rem;
@@ -30,8 +38,10 @@ nav {
 
 ul {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
+  padding: 0px;
   list-style: none;
-  padding: 0;
+  /* height: 1.2rem; */
 }
 </style>

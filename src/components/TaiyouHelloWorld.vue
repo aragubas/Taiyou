@@ -13,7 +13,7 @@ function windowInstance(): WindowInstance {
 
 onMounted(() => {
   window.value = createWindow({
-    title: "Welcome",
+    title: `Welcome${Math.random() * 15}`,
     onClose,
     onMinimize,
     onRestore,

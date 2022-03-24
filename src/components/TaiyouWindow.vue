@@ -7,22 +7,24 @@ import {
   getInstance,
 } from "../window-manager";
 
-let left = ref(50);
-let top = ref(50);
+// let left = ref(50);
+// let top = ref(50);
 
 const props = defineProps<{ windowID: string }>();
 
-let moveMouseCapture = ref(false);
+let moveMouseCapture = false;
 let moveMouseInitialX = 0;
 let moveMouseInitialY = 0;
 
-let resizeMouseCapture = ref(false);
+let resizeMouseCapture = false;
 let resizeMouseInitialX = 0;
 let resizeMouseInitialY = 0;
 
 onMounted(() => {
-  left.value = window.innerWidth / 2 - getWindow().width / 2;
-  top.value = window.innerHeight / 2 - getWindow().height / 2;
+  getInstance(props.windowID).left =
+    window.innerWidth / 2 - getWindow().width / 2;
+  getInstance(props.windowID).top =
+    window.innerHeight / 2 - getWindow().height / 2;
 });
 
 function getWindow() {
@@ -35,9 +37,9 @@ function moveMouseMove(event: MouseEvent) {
     return;
   }
 
-  if (moveMouseCapture.value) {
-    left.value = event.x - moveMouseInitialX;
-    top.value = event.y - moveMouseInitialY;
+  if (moveMouseCapture) {
+    getInstance(props.windowID).left = event.x - moveMouseInitialX;
+    getInstance(props.windowID).top = event.y - moveMouseInitialY;
   }
   constrainPosition(event);
 }
@@ -45,9 +47,9 @@ function moveMouseMove(event: MouseEvent) {
 function moveMouseDown(event: MouseEvent) {
   event.preventDefault();
   focus();
-  moveMouseCapture.value = true;
-  moveMouseInitialX = event.x - left.value;
-  moveMouseInitialY = event.y - top.value;
+  moveMouseCapture = true;
+  moveMouseInitialX = event.x - getInstance(props.windowID).left;
+  moveMouseInitialY = event.y - getInstance(props.windowID).top;
 
   document.addEventListener("mousemove", moveMouseMove);
 }
@@ -58,7 +60,7 @@ function moveMouseUp(event: MouseEvent) {
 }
 
 function moveEnd() {
-  moveMouseCapture.value = false;
+  moveMouseCapture = false;
   moveMouseInitialX = 0;
   moveMouseInitialY = 0;
 
@@ -71,9 +73,11 @@ function resizeMouseMove(event: MouseEvent) {
     return;
   }
 
-  if (resizeMouseCapture.value) {
-    getWindow().width = event.x - left.value - resizeMouseInitialX;
-    getWindow().height = event.y - top.value - resizeMouseInitialY;
+  if (resizeMouseCapture) {
+    getWindow().width =
+      event.x - getInstance(props.windowID).left - resizeMouseInitialX;
+    getWindow().height =
+      event.y - getInstance(props.windowID).top - resizeMouseInitialY;
   }
 
   constrainPosition(event);
@@ -82,9 +86,11 @@ function resizeMouseMove(event: MouseEvent) {
 function resizeMouseDown(event: MouseEvent) {
   event.preventDefault();
   focus();
-  resizeMouseCapture.value = true;
-  resizeMouseInitialX = event.x - (left.value + getWindow().width);
-  resizeMouseInitialY = event.y - (top.value + getWindow().height);
+  resizeMouseCapture = true;
+  resizeMouseInitialX =
+    event.x - (getInstance(props.windowID).left + getWindow().width);
+  resizeMouseInitialY =
+    event.y - (getInstance(props.windowID).top + getWindow().height);
 
   document.addEventListener("mousemove", resizeMouseMove);
 }
@@ -96,30 +102,46 @@ function resizeMouseUp(event: MouseEvent) {
 
 function constrainPosition(event: MouseEvent) {
   // Keep window inside viewport
-  if (!resizeMouseCapture.value) {
-    if (left.value < 0) {
-      left.value = 0;
+  if (!resizeMouseCapture) {
+    if (getInstance(props.windowID).left < 0) {
+      getInstance(props.windowID).left = 0;
     }
 
-    if (left.value + getWindow().width >= event.view!.innerWidth) {
-      left.value = event.view!.innerWidth - getWindow().width;
+    if (
+      getInstance(props.windowID).left + getWindow().width >=
+      event.view!.innerWidth
+    ) {
+      getInstance(props.windowID).left =
+        event.view!.innerWidth - getWindow().width;
     }
 
-    if (top.value < 0) {
-      top.value = 0;
+    if (getInstance(props.windowID).top < 0) {
+      getInstance(props.windowID).top = 0;
     }
 
-    if (top.value + getWindow().height >= event.view!.innerHeight) {
-      top.value = event.view!.innerHeight - getWindow().height;
+    if (
+      getInstance(props.windowID).top + getWindow().height >=
+      event.view!.innerHeight
+    ) {
+      getInstance(props.windowID).top =
+        event.view!.innerHeight - getWindow().height;
     }
   } else {
     // Keep window inside parent
-    if (left.value + getWindow().width > event.view!.innerWidth) {
-      getWindow().width = event.view!.innerWidth - left.value;
+    if (
+      getInstance(props.windowID).left + getWindow().width >
+      event.view!.innerWidth
+    ) {
+      getWindow().width =
+        event.view!.innerWidth - getInstance(props.windowID).left;
     }
 
-    if (top.value + getWindow().height > event.view!.innerHeight) {
-      getWindow().height = event.view!.innerHeight - top.value;
+    if (
+      getInstance(props.windowID).top + getWindow().height >
+      event.view!.innerHeight
+    ) {
+      getWindow().height =
+        event.view!.innerHeight - getInstance(props.windowID).top;
     }
 
     if (getWindow().width < getWindow().minWidth) {
@@ -133,7 +155,7 @@ function constrainPosition(event: MouseEvent) {
 }
 
 function resizeEnd() {
-  resizeMouseCapture.value = false;
+  resizeMouseCapture = false;
   resizeMouseInitialX = 0;
   resizeMouseInitialY = 0;
   document.removeEventListener("mousemove", resizeMouseMove);
@@ -147,8 +169,8 @@ function focus() {
 <template>
   <div
     v-bind:style="{
-      left: left + 'px',
-      top: top + 'px',
+      left: getWindow().left + 'px',
+      top: getWindow().top + 'px',
       width: getWindow().width + 'px',
       height: getWindow().height + 'px',
     }"
@@ -199,45 +221,33 @@ function focus() {
 .window-container {
   display: flex;
   flex-direction: column;
-  transition: border-radius 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
+  transition: transform 0.25s ease, opacity 0.25s ease;
   position: absolute;
   background: rgb(48, 50, 56);
   box-shadow: 0px 0px 1px black;
-  border-radius: 2px;
+  border-radius: 6px;
   color: lightgray;
   /* opacity: 1; */
 }
-
-@keyframes minimize {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+.focused {
+  box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.8);
+  background: rgb(50, 52, 58);
+  color: white;
 }
 
 .minimized {
-  /* animation: minimize 0.3s ease; */
   opacity: 0;
-  transform: scale(50%);
+  transform: scale(95%);
 }
 
 .resize-handle {
   position: absolute;
   bottom: 0px;
-  right: 0px;
+  right: 1px;
   font-size: 0.7rem;
   user-select: none;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.1);
   cursor: se-resize;
-}
-
-.focused {
-  box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.8);
-  border-radius: 5px;
-  background: rgb(50, 52, 58);
-  color: white;
 }
 
 main {
@@ -247,6 +257,12 @@ main {
   height: calc(100% - 1.5rem);
   overflow: auto;
   user-select: initial;
+  border-bottom-right-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+main::-webkit-scrollbar {
+  border-bottom-right-radius: 5px;
 }
 
 .window-header {
@@ -257,7 +273,9 @@ main {
   height: 1.5rem;
   padding: 0 0.3rem;
   user-select: none;
-  background: linear-gradient(rgba(70, 72, 82, 0.2) 0%, transparent);
+  background: linear-gradient(rgba(70, 72, 84, 0.3) 0%, transparent);
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
 }
 
 .window-header p {

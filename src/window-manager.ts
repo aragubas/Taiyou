@@ -11,6 +11,8 @@ export class WindowInstance {
   height: number = 320;
   minWidth: number = 200;
   minHeight: number = 150;
+  left: number = 0;
+  top: number = 0;
   globalMenu: GlobalMenuInstance | undefined = undefined;
   onClose: () => void = () => {};
   onMinimize: () => void = () => {};
@@ -69,7 +71,11 @@ export function createWindow(properties: WindowFactoryProperties): string {
 
   newWindow.globalMenu = new GlobalMenuInstance();
   newWindow.globalMenu.id = newWindowId;
-  newWindow.globalMenu.items = [new GlobalMenuItem()];
+  newWindow.globalMenu.items = [
+    new GlobalMenuItem(),
+    new GlobalMenuItem(),
+    new GlobalMenuItem(),
+  ];
 
   Sinas.value.push(newWindow);
   // Focus newly created window
