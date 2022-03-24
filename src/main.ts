@@ -4,4 +4,3 @@ import TaiyouHelloWorldVue from "./components/TaiyouHelloWorld.vue";
 import { createWindow } from "./window-manager";
 
 createApp(App).mount("#app");
-createApp(TaiyouHelloWorldVue).mount("#taiyou-hello-world");

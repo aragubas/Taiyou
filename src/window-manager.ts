@@ -5,14 +5,43 @@ export let focusedWindow = ref("");
 class WindowInstance {
   id: string = "";
   title: string = "";
+  minimized: boolean = false;
+  width: number = 400;
+  height: number = 320;
+  minWidth: number = 200;
+  minHeight: number = 150;
   onClose: () => void = () => {};
   onMinimize: () => void = () => {};
+  onRestore: () => void = () => {};
+
+  minimize() {
+    this.minimized = true;
+    this.onMinimize();
+  }
+
+  restore() {
+    this.minimized = false;
+    this.onRestore();
+  }
+
+  toggleMinimize() {
+    if (!this.minimized) {
+      this.minimize();
+    } else {
+      this.restore();
+    }
+  }
 }
 
 interface WindowFactoryProperties {
   title: string;
+  width?: number;
+  height?: number;
+  minWidth?: number;
+  minHeight?: number;
   onClose: () => void;
   onMinimize: () => void;
+  onRestore: () => void;
 }
 
 let Sinas: Ref<Array<WindowInstance>> = ref(Array<WindowInstance>());
@@ -28,6 +57,10 @@ export function createWindow(properties: WindowFactoryProperties): string {
   newWindow.title = properties.title;
   newWindow.onClose = properties.onClose;
   newWindow.onMinimize = properties.onMinimize;
+  newWindow.onRestore = properties.onRestore;
+  if (properties.width) {
+    newWindow.width = properties.width;
+  }
   Sinas.value.push(newWindow);
 
   // Focus newly created window
@@ -36,21 +69,24 @@ export function createWindow(properties: WindowFactoryProperties): string {
   return `taiyouwindow-${newWindowId}`;
 }
 
-export function minimizeWindow(id: string) {
-  const instance = Sinas.value.find((item) => item.id === id);
-  if (!instance) {
-    return;
+export function destroyWindow(id: string) {
+  let windowToDestroy = Sinas.value.find((window) => window.id === id);
+  if (windowToDestroy) {
+    windowToDestroy.onClose();
+    Sinas.value.splice(Sinas.value.indexOf(windowToDestroy), 1);
   }
-  instance.onClose?.call(null);
 }
 
-export function focusWindow(id: string) {
+export function focusWindow(id: string, unminimize: boolean = false) {
   // Move item with id to start of array
   const index = Sinas.value.findIndex((item) => item.id === id);
   const instance = Sinas.value.find((item) => item.id === id);
 
   if (!instance) {
     return;
+  }
+  if (unminimize) {
+    instance.minimized = false;
   }
 
   Sinas.value.splice(index, 1);

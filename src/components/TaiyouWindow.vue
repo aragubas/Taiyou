@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { focusedWindow, focusWindow, getInstance } from "../window-manager";
+import {
+  focusedWindow,
+  destroyWindow,
+  focusWindow,
+  getInstance,
+} from "../window-manager";
 
 let left = ref(50);
 let top = ref(50);
-let width = ref(400);
-let height = ref(300);
-let minWidth = ref(200);
-let minHeight = ref(150);
 
 const props = defineProps<{ windowID: string }>();
 
@@ -18,6 +19,11 @@ let moveMouseInitialY = 0;
 let resizeMouseCapture = ref(false);
 let resizeMouseInitialX = 0;
 let resizeMouseInitialY = 0;
+
+onMounted(() => {
+  left.value = window.innerWidth / 2 - getWindow().width / 2;
+  top.value = window.innerHeight / 2 - getWindow().height / 2;
+});
 
 function getWindow() {
   return getInstance(props.windowID);
@@ -66,8 +72,8 @@ function resizeMouseMove(event: MouseEvent) {
   }
 
   if (resizeMouseCapture.value) {
-    width.value = event.x - left.value - resizeMouseInitialX;
-    height.value = event.y - top.value - resizeMouseInitialY;
+    getWindow().width = event.x - left.value - resizeMouseInitialX;
+    getWindow().height = event.y - top.value - resizeMouseInitialY;
   }
 
   constrainPosition(event);
@@ -77,8 +83,8 @@ function resizeMouseDown(event: MouseEvent) {
   event.preventDefault();
   focus();
   resizeMouseCapture.value = true;
-  resizeMouseInitialX = event.x - (left.value + width.value);
-  resizeMouseInitialY = event.y - (top.value + height.value);
+  resizeMouseInitialX = event.x - (left.value + getWindow().width);
+  resizeMouseInitialY = event.y - (top.value + getWindow().height);
 
   document.addEventListener("mousemove", resizeMouseMove);
 }
@@ -95,33 +101,33 @@ function constrainPosition(event: MouseEvent) {
       left.value = 0;
     }
 
-    if (left.value + width.value >= event.view!.innerWidth) {
-      left.value = event.view!.innerWidth - width.value;
+    if (left.value + getWindow().width >= event.view!.innerWidth) {
+      left.value = event.view!.innerWidth - getWindow().width;
     }
 
     if (top.value < 0) {
       top.value = 0;
     }
 
-    if (top.value + height.value >= event.view!.innerHeight) {
-      top.value = event.view!.innerHeight - height.value;
+    if (top.value + getWindow().height >= event.view!.innerHeight) {
+      top.value = event.view!.innerHeight - getWindow().height;
     }
   } else {
     // Keep window inside parent
-    if (left.value + width.value > event.view!.innerWidth) {
-      width.value = event.view!.innerWidth - left.value;
+    if (left.value + getWindow().width > event.view!.innerWidth) {
+      getWindow().width = event.view!.innerWidth - left.value;
     }
 
-    if (top.value + height.value > event.view!.innerHeight) {
-      height.value = event.view!.innerHeight - top.value;
+    if (top.value + getWindow().height > event.view!.innerHeight) {
+      getWindow().height = event.view!.innerHeight - top.value;
     }
 
-    if (width.value < minWidth.value) {
-      width.value = minWidth.value;
+    if (getWindow().width < getWindow().minWidth) {
+      getWindow().width = getWindow().minWidth;
     }
 
-    if (height.value < minHeight.value) {
-      height.value = minHeight.value;
+    if (getWindow().height < getWindow().minHeight) {
+      getWindow().height = getWindow().minHeight;
     }
   }
 }
@@ -143,13 +149,13 @@ function focus() {
     v-bind:style="{
       left: left + 'px',
       top: top + 'px',
-      width: width + 'px',
-      height: height + 'px',
+      width: getWindow().width + 'px',
+      height: getWindow().height + 'px',
     }"
     class="window-container"
     :class="[
-      moveMouseCapture ? 'grab' : '',
       focusedWindow == props.windowID ? 'focused' : '',
+      getWindow().minimized ? 'minimized' : '',
     ]"
     @click="focus"
   >
@@ -163,13 +169,13 @@ function focus() {
           <a
             class="window-button"
             name="close"
-            @click="getWindow().onClose()"
+            @click="destroyWindow(props.windowID)"
           ></a>
 
           <a
             class="window-button"
             name="minimize"
-            @click="getWindow().onMinimize()"
+            @click="getWindow().minimize()"
           ></a>
         </div>
         <p>{{ getWindow().title }}</p>
@@ -193,16 +199,28 @@ function focus() {
 .window-container {
   display: flex;
   flex-direction: column;
-  transition: border-radius 0.25s ease;
+  transition: border-radius 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
   position: absolute;
   background: rgb(48, 50, 56);
   box-shadow: 0px 0px 1px black;
   border-radius: 2px;
   color: lightgray;
+  /* opacity: 1; */
 }
 
-.grab {
-  will-change: top, left, width, height, transform;
+@keyframes minimize {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.minimized {
+  /* animation: minimize 0.3s ease; */
+  opacity: 0;
+  transform: scale(50%);
 }
 
 .resize-handle {
