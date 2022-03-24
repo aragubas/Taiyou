@@ -1,30 +1,18 @@
-<script lang="ts">
-import { defineComponent } from "@vue/runtime-core";
+<script setup lang="ts">
+import { GlobalMenuInstance } from "../global-menu";
+import { focusedWindow, getInstance, WindowInstance } from "../window-manager";
 
-export default defineComponent({
-  props: {
-    title: { default: "sinas" },
-    left: { default: 50 },
-    top: { default: 50 },
-    width: { default: 400 },
-    height: { default: 300 },
-  },
-});
+function getFocusedWindow(): GlobalMenuInstance | undefined {
+  return getInstance(focusedWindow.value).globalMenu;
+}
 </script>
 
 <template>
-  <nav>
-    <ul>
-      <li><a href="#">File</a></li>
-      <li>Edit</li>
-      <li>Selection</li>
-      <li>View</li>
-      <li>Go</li>
-      <li>Run</li>
-      <li>Terminal</li>
-      <li>Help</li>
-    </ul>
-  </nav>
+  <div v-if="getInstance(focusedWindow) != undefined">
+    <nav v-for="item in getFocusedWindow()?.items" :key="item.id">
+      <p>{{ item.text }}</p>
+    </nav>
+  </div>
 </template>
 
 <style scoped>

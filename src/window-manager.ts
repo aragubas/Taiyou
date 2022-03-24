@@ -1,8 +1,9 @@
 import { v4 } from "uuid";
 import { ComponentPublicInstance, ref, Ref } from "vue";
+import { GlobalMenuInstance, GlobalMenuItem } from "./global-menu";
 export let focusedWindow = ref("");
 
-class WindowInstance {
+export class WindowInstance {
   id: string = "";
   title: string = "";
   minimized: boolean = false;
@@ -10,6 +11,7 @@ class WindowInstance {
   height: number = 320;
   minWidth: number = 200;
   minHeight: number = 150;
+  globalMenu: GlobalMenuInstance | undefined = undefined;
   onClose: () => void = () => {};
   onMinimize: () => void = () => {};
   onRestore: () => void = () => {};
@@ -17,10 +19,13 @@ class WindowInstance {
   minimize() {
     this.minimized = true;
     this.onMinimize();
+    focusedWindow.value = "";
   }
 
   restore() {
     this.minimized = false;
+    focusedWindow.value = this.id;
+    focusWindow(this.id);
     this.onRestore();
   }
 
@@ -61,8 +66,12 @@ export function createWindow(properties: WindowFactoryProperties): string {
   if (properties.width) {
     newWindow.width = properties.width;
   }
-  Sinas.value.push(newWindow);
 
+  newWindow.globalMenu = new GlobalMenuInstance();
+  newWindow.globalMenu.id = newWindowId;
+  newWindow.globalMenu.items = [new GlobalMenuItem()];
+
+  Sinas.value.push(newWindow);
   // Focus newly created window
   focusWindow(newWindowId);
 
