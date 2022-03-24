@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { getCurrentInstance, Ref, ref } from "vue";
-import { focusedWindow, focusWindow } from "../window-manager";
+import { onMounted, ref } from "vue";
+import { focusedWindow, focusWindow, getInstance } from "../window-manager";
 
-let title = ref("Sinas");
 let left = ref(50);
 let top = ref(50);
 let width = ref(400);
 let height = ref(300);
+let minWidth = ref(200);
+let minHeight = ref(150);
 
 const props = defineProps<{ windowID: string }>();
 
@@ -17,6 +18,10 @@ let moveMouseInitialY = 0;
 let resizeMouseCapture = ref(false);
 let resizeMouseInitialX = 0;
 let resizeMouseInitialY = 0;
+
+function getWindow() {
+  return getInstance(props.windowID);
+}
 
 function moveMouseMove(event: MouseEvent) {
   if ((event.buttons || event.button) != 1) {
@@ -110,6 +115,14 @@ function constrainPosition(event: MouseEvent) {
     if (top.value + height.value > event.view!.innerHeight) {
       height.value = event.view!.innerHeight - top.value;
     }
+
+    if (width.value < minWidth.value) {
+      width.value = minWidth.value;
+    }
+
+    if (height.value < minHeight.value) {
+      height.value = minHeight.value;
+    }
   }
 }
 
@@ -146,16 +159,24 @@ function focus() {
         @mousedown="moveMouseDown"
         @mouseup="moveMouseUp"
       >
-        <p>{{ title }}</p>
+        <p>{{ getWindow().title }}</p>
         <div class="window-actions">
-          <a href="#" class="window-button">🗙</a>
-          <a href="#" class="window-button">🗗</a>
-          <a href="#" class="window-button">🗕</a>
+          <a
+            class="window-button"
+            name="close"
+            @click="getWindow().onClose()"
+          ></a>
+
+          <a
+            class="window-button"
+            name="minimize"
+            @click="getWindow().onMinimize()"
+          ></a>
         </div>
       </div>
     </header>
 
-    <main>
+    <main :id="'taiyouwindow-' + windowID">
       <slot />
     </main>
 
@@ -191,6 +212,7 @@ function focus() {
   font-size: 0.7rem;
   user-select: none;
   color: rgba(255, 255, 255, 0.5);
+  cursor: se-resize;
 }
 
 .focused {
@@ -210,12 +232,27 @@ main {
 }
 
 .window-header {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   height: 1.5rem;
   padding: 0 0.3rem;
   user-select: none;
+  background: linear-gradient(rgba(70, 72, 82, 0.2) 0%, transparent);
+}
+
+.window-header p {
+  position: absolute;
+  left: 2.3rem;
+  right: 0.3rem;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 98%;
 }
 
 .window-actions {
@@ -224,14 +261,22 @@ main {
 }
 
 .window-button {
-  display: flex;
-  align-items: center;
-  width: 1rem;
-  height: 1rem;
+  width: 0.8rem;
+  height: 0.8rem;
   color: lightgray;
+  border-radius: 100%;
+  background: rgb(130, 132, 142);
+}
+
+.window-button[name="close"] {
+  background: rgb(180, 132, 132);
+}
+
+.window-button[name="close"]:hover {
+  background: rgb(210, 142, 148);
 }
 
 .window-button:hover {
-  color: white;
+  background: rgb(150, 152, 164);
 }
 </style>
