@@ -159,7 +159,6 @@ function focus() {
         @mousedown="moveMouseDown"
         @mouseup="moveMouseUp"
       >
-        <p>{{ getWindow().title }}</p>
         <div class="window-actions">
           <a
             class="window-button"
@@ -173,6 +172,7 @@ function focus() {
             @click="getWindow().onMinimize()"
           ></a>
         </div>
+        <p>{{ getWindow().title }}</p>
       </div>
     </header>
 
@@ -243,16 +243,12 @@ main {
 }
 
 .window-header p {
-  position: absolute;
-  left: 2.3rem;
-  right: 0.3rem;
-  text-align: center;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  max-width: 98%;
+  padding-left: 0.4rem;
 }
 
 .window-actions {
@@ -265,7 +261,7 @@ main {
   height: 0.8rem;
   color: lightgray;
   border-radius: 100%;
-  background: rgb(130, 132, 142);
+  background: rgb(130, 132, 148);
 }
 
 .window-button[name="close"] {
