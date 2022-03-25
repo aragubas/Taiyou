@@ -3,9 +3,11 @@ import { v4 } from "uuid";
 export class GlobalMenuItem {
   id: string = v4();
   text: string;
+  callback: () => void;
 
-  constructor(text: string) {
+  constructor(text: string, callback: () => void) {
     this.text = text;
+    this.callback = callback;
   }
 }
 

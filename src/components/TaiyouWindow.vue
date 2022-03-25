@@ -211,6 +211,7 @@ function focus() {
       class="resize-handle"
       @mousedown="resizeMouseDown"
       @mouseup="resizeMouseUp"
+      v-if="getWindow().resizable"
       >...</span
     >
   </div>

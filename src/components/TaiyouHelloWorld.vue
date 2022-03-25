@@ -1,11 +1,20 @@
 <script setup lang="ts">
 import { onActivated, onMounted } from "@vue/runtime-core";
+import { GlobalMenuItem } from "../global-menu";
 import { getInstance } from "../window-manager";
 
 const props = defineProps<{ windowID: string }>();
 
+function fileMenu() {
+  alert("File Menu!");
+}
+
 onMounted(() => {
   getInstance(props.windowID).title = "sinas do caldo de pilha";
+
+  getInstance(props.windowID).globalMenu?.items.push(
+    new GlobalMenuItem("File", fileMenu)
+  );
 });
 </script>
 

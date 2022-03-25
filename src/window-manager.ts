@@ -8,6 +8,7 @@ export class WindowInstance {
   title: string = "";
   componentPath: string = "";
   minimized: boolean = false;
+  resizable: boolean = true;
   width: number = 400;
   height: number = 320;
   minWidth: number = 200;
@@ -44,6 +45,7 @@ export class WindowInstance {
 interface WindowFactoryProperties {
   title: string;
   componentPath: string;
+  resizable?: boolean;
   width?: number;
   height?: number;
   minWidth?: number;
@@ -68,18 +70,30 @@ export function createWindow(properties: WindowFactoryProperties): string {
   if (properties.onClose) {
     newWindow.onClose = properties.onClose;
   }
+
   if (properties.onMinimize) {
     newWindow.onMinimize = properties.onMinimize;
   }
+
   if (properties.onRestore) {
     newWindow.onRestore = properties.onRestore;
   }
 
-  newWindow.componentPath = properties.componentPath;
   if (properties.width) {
     newWindow.width = properties.width;
   }
 
+  if (properties.height) {
+    newWindow.height = properties.height;
+  }
+
+  if (properties.resizable != undefined) {
+    newWindow.resizable = properties.resizable;
+  }
+
+  newWindow.componentPath = properties.componentPath;
+
+  // Create global menu instance
   newWindow.globalMenu = new GlobalMenuInstance(newWindowId);
 
   Sinas.value.push(newWindow);

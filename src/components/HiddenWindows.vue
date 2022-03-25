@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import Sinas, { focusWindow, getInstance } from "../window-manager";
 
 function _focusWindow(id: string) {
@@ -8,7 +9,7 @@ function _focusWindow(id: string) {
 
 <template>
   <div class="container">
-    <ul>
+    <ul class="window-list">
       <li v-for="window in Sinas" :key="window.id">
         <a
           class="button"
@@ -18,6 +19,20 @@ function _focusWindow(id: string) {
         >
       </li>
     </ul>
+
+    <div class="actions-panel">
+      <span class="user-img"></span>
+
+      <ul class="actions-controls">
+        <li>
+          <img class="button-icon" src="gear.svg" />
+        </li>
+
+        <li>
+          <img class="button-icon" src="bell.svg" />
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -25,29 +40,59 @@ function _focusWindow(id: string) {
 .container {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 0.3rem;
-  transition: left 0.3s cubic-bezier(0.175, 0.885, 0.32, 1), opacity 0.25s ease;
   position: absolute;
   width: 12rem;
   padding: 0.3rem;
   bottom: 0px;
   top: 0px;
-  background: rgba(60, 62, 68, 0.98);
-  left: -12rem;
-  top: 1.2rem;
-  opacity: 0.3;
+  background: rgb(60, 62, 68);
+  top: 1.4rem;
   overflow: hidden;
 }
 
-ul {
+.button-icon {
+  display: flex;
+  align-items: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  padding: 0.5rem;
+  background: rgb(80, 82, 88);
+  border-radius: 4px;
+}
+
+.button-icon:hover {
+  background: rgb(90, 92, 98);
+}
+
+.user-img {
+  border-radius: 100%;
+  width: 2rem;
+  height: 2rem;
+  background: gray;
+}
+
+.autohide {
+  transition: left 0.3s cubic-bezier(0.1, 0.53, 0.03, 0.96), opacity 0.25s ease;
+  transition-delay: 0.5s;
+
+  left: -12rem;
+  opacity: 0.3;
+}
+.autohide:hover {
+  transition-delay: 0.1s;
+  left: 0px;
+  opacity: 0.95;
+}
+
+.window-list {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-}
-
-.container:hover {
-  left: 0px;
-  opacity: 1;
+  overflow-y: auto;
+  padding-bottom: 1rem;
+  padding-right: 0.2rem;
 }
 
 .button {
@@ -59,6 +104,20 @@ ul {
   overflow: hidden;
   text-overflow: ellipsis;
   border-radius: 4px;
+}
+
+.actions-panel {
+  display: flex;
+  justify-self: center;
+
+  gap: 0.5rem;
+  background: rgb(60, 62, 68);
+}
+
+.actions-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .button[minimized="true"] {

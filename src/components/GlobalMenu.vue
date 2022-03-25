@@ -16,7 +16,7 @@ function getFocusedWindow(): WindowInstance | undefined {
           v-for="item in getFocusedWindow()?.globalMenu?.items"
           :key="item.id"
         >
-          <a>{{ item.text }}</a>
+          <a @click="item.callback">{{ item.text }}</a>
         </li>
       </ul>
     </div>
@@ -28,12 +28,20 @@ function getFocusedWindow(): WindowInstance | undefined {
   display: flex;
   /* justify-content: space-between; */
   align-items: center;
-  height: 1.2rem;
+  height: 1.4rem;
   font-size: 0.8rem;
   padding: 0 0.5rem;
 
   background: rgb(60, 62, 68);
   box-shadow: 0px 0px 1px black;
+}
+
+a {
+  user-select: none;
+}
+
+a:hover {
+  color: white;
 }
 
 ul {
