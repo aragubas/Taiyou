@@ -29,6 +29,8 @@ function getFocusedWindow(): WindowInstance | undefined {
   /* justify-content: space-between; */
   align-items: center;
   height: 1.4rem;
+  width: 100%;
+  box-sizing: border-box;
   font-size: 0.8rem;
   padding: 0 0.5rem;
 

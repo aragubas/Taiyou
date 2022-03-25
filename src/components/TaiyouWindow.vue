@@ -178,7 +178,7 @@ function focus() {
       focusedWindow == props.windowID ? 'focused' : '',
       getWindow().minimized ? 'minimized' : '',
     ]"
-    @click="focus"
+    @mousedown="focus"
   >
     <header>
       <div

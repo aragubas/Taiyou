@@ -2,10 +2,15 @@
 import TaiyouWindow from "./components/TaiyouWindow.vue";
 import GlobalMenu from "./components/GlobalMenu.vue";
 import Sinas, { createWindow } from "./window-manager";
-import HiddenWindows from "./components/HiddenWindows.vue";
+import HiddenWindows from "./components/ActionBar.vue";
 
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
+
+createWindow({
+  title: "Welcome Window",
+  componentPath: "./TaiyouHelloWorld.vue",
+});
 
 createWindow({
   title: "Welcome Window",
@@ -37,10 +42,10 @@ body {
 *::-webkit-scrollbar {
   width: 0.5rem;
   height: 0.5rem;
-  background: rgb(30, 32, 38);
+  background: rgb(40, 42, 52);
 }
 *::-webkit-scrollbar-thumb {
-  background: rgb(50, 52, 62);
+  background: rgba(50, 52, 62, 0.9);
   background-clip: content-box;
   border-radius: 0.5rem;
   border: 0.15rem solid transparent;
@@ -48,6 +53,11 @@ body {
 
 *::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+p,
+h1 {
+  margin: 0;
 }
 
 ul {
