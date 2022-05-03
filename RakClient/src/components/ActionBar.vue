@@ -199,15 +199,13 @@ function toggleNotifications() {
 .button {
   transition: background-color 0.3s ease, color 0.3s ease;
   display: block;
-  background-color: rgba(40, 42, 48, 0.5);
+  background-color: rgba(40, 42, 48, 1);
   padding: 0.5rem;
   user-select: none;
   overflow: hidden;
   text-overflow: ellipsis;
   border-radius: 4px;
-  border-color: red;
-  border-width: 1px;
-  border-style: solid;
+  /* border: 1px solid red; */
 }
 
 .actions-panel {
