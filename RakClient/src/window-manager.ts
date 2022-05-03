@@ -112,11 +112,13 @@ export function destroyWindow(id: string) {
 }
 
 export function focusWindow(id: string, unminimize: boolean = false) {
+  if (id === focusedWindow.value) { return; }
   // Move item with id to start of array
   const index = Sinas.value.findIndex((item) => item.id === id);
   const instance = Sinas.value.find((item) => item.id === id);
 
   if (!instance) {
+    console.error("Cannot focus in inexistent window");
     return;
   }
   if (unminimize) {

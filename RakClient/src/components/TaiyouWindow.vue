@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { defineAsyncComponent, onMounted } from "vue";
+import { defineAsyncComponent, onMounted, onUnmounted } from "vue";
 import {
   focusWindow,
   getInstance,
   focusedWindow,
-  destroyWindow,
+  destroyWindow
 } from "../window-manager";
 
 const props = defineProps<{ windowID: string }>();
@@ -18,12 +18,21 @@ let resizeMouseCapture = false;
 let resizeMouseInitialX = 0;
 let resizeMouseInitialY = 0;
 
-onMounted(() => {
-  getInstance(props.windowID).left =
-    window.innerWidth / 2 - getWindow().width / 2;
-  getInstance(props.windowID).top =
-    window.innerHeight / 2 - getWindow().height / 2;
+onUnmounted(() => {
+  window.removeEventListener("resize", constraintGeometry);
 });
+
+onMounted(() => {
+  CenterWindow();
+
+  window.addEventListener("resize", constraintGeometry)
+});
+
+function CenterWindow()
+{
+  getInstance(props.windowID).left = window.innerWidth / 2 - getWindow().width / 2;
+  getInstance(props.windowID).top = window.innerHeight / 2 - getWindow().height / 2;
+}
 
 function getWindow() {
   return getInstance(props.windowID);
@@ -39,15 +48,18 @@ function moveMouseMove(event: MouseEvent) {
     getInstance(props.windowID).left = event.x - moveMouseInitialX;
     getInstance(props.windowID).top = event.y - moveMouseInitialY;
   }
-  constrainPosition(event);
+  constraintGeometry();
 }
 
 function moveMouseDown(event: MouseEvent) {
   event.preventDefault();
   focus();
+
   moveMouseCapture = true;
-  moveMouseInitialX = event.x - getInstance(props.windowID).left;
-  moveMouseInitialY = event.y - getInstance(props.windowID).top;
+ 
+  const instance = getInstance(props.windowID);
+  moveMouseInitialX = event.x - instance.left;
+  moveMouseInitialY = event.y - instance.top;
 
   document.addEventListener("mousemove", moveMouseMove);
 }
@@ -72,23 +84,19 @@ function resizeMouseMove(event: MouseEvent) {
   }
 
   if (resizeMouseCapture) {
-    getWindow().width =
-      event.x - getInstance(props.windowID).left - resizeMouseInitialX;
-    getWindow().height =
-      event.y - getInstance(props.windowID).top - resizeMouseInitialY;
+    getWindow().width = event.x - getInstance(props.windowID).left - resizeMouseInitialX;
+    getWindow().height = event.y - getInstance(props.windowID).top - resizeMouseInitialY;
   }
 
-  constrainPosition(event);
+  constraintGeometry();
 }
 
 function resizeMouseDown(event: MouseEvent) {
   event.preventDefault();
   focus();
   resizeMouseCapture = true;
-  resizeMouseInitialX =
-    event.x - (getInstance(props.windowID).left + getWindow().width);
-  resizeMouseInitialY =
-    event.y - (getInstance(props.windowID).top + getWindow().height);
+  resizeMouseInitialX = event.x - (getInstance(props.windowID).left + getWindow().width);
+  resizeMouseInitialY = event.y - (getInstance(props.windowID).top + getWindow().height);
 
   document.addEventListener("mousemove", resizeMouseMove);
 }
@@ -98,48 +106,33 @@ function resizeMouseUp(event: MouseEvent) {
   resizeEnd();
 }
 
-function constrainPosition(event: MouseEvent) {
+function constraintGeometry() {
   // Keep window inside viewport
   if (!resizeMouseCapture) {
     if (getInstance(props.windowID).left < 0) {
       getInstance(props.windowID).left = 0;
     }
 
-    if (
-      getInstance(props.windowID).left + getWindow().width >=
-      event.view!.innerWidth
-    ) {
-      getInstance(props.windowID).left =
-        event.view!.innerWidth - getWindow().width;
+    if (getInstance(props.windowID).left + getWindow().width >= window.innerWidth) {
+      getInstance(props.windowID).left = window.innerWidth - getWindow().width;
     }
 
     if (getInstance(props.windowID).top < 0) {
       getInstance(props.windowID).top = 0;
     }
-
-    if (
-      getInstance(props.windowID).top + getWindow().height >=
-      event.view!.innerHeight
-    ) {
-      getInstance(props.windowID).top =
-        event.view!.innerHeight - getWindow().height;
+    
+    if (getInstance(props.windowID).top + getWindow().height >= window.innerHeight) {
+      getInstance(props.windowID).top = window.innerHeight - getWindow().height;
     }
+
   } else {
     // Keep window inside parent
-    if (
-      getInstance(props.windowID).left + getWindow().width >
-      event.view!.innerWidth
-    ) {
-      getWindow().width =
-        event.view!.innerWidth - getInstance(props.windowID).left;
+    if (getInstance(props.windowID).left + getWindow().width > window.innerWidth) {
+      getWindow().width = window.innerWidth - getInstance(props.windowID).left;
     }
 
-    if (
-      getInstance(props.windowID).top + getWindow().height >
-      event.view!.innerHeight
-    ) {
-      getWindow().height =
-        event.view!.innerHeight - getInstance(props.windowID).top;
+    if (getInstance(props.windowID).top + getWindow().height > window.innerHeight) {
+      getWindow().height = window.innerHeight - getInstance(props.windowID).top;
     }
 
     if (getWindow().width < getWindow().minWidth) {
@@ -238,6 +231,7 @@ function focus() {
 .minimized {
   opacity: 0;
   transform: scale(95%);
+  pointer-events: none;
 }
 
 .resize-handle {
