@@ -78,7 +78,7 @@ function toggleNotifications() {
       </li>
     </ol>
   </div>
-  
+
 </template>
 
 <style scoped>
@@ -116,7 +116,7 @@ function toggleNotifications() {
   gap: 0.5rem;
   overflow-y: auto;
   list-style: none;
-  padding: 0.2rem;
+  padding: 0.5rem;
   margin: 0;
 }
 
