@@ -14,12 +14,7 @@ createWindow({componentPath: "TaiyouHelloWorld.vue"});
 <template>
   <GlobalMenu></GlobalMenu>
   <main>
-    <TaiyouWindow
-      v-for="window in Sinas"
-      :key="window.id"
-      :windowID="window.id"
-    >
-    </TaiyouWindow>
+    <TaiyouWindow v-for="window in Sinas" :key="window.id" :windowID="window.id"></TaiyouWindow>
   </main>
   <ActionBar></ActionBar>
 </template>

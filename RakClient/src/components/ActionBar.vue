@@ -205,7 +205,6 @@ function toggleNotifications() {
   overflow: hidden;
   text-overflow: ellipsis;
   border-radius: 4px;
-  /* border: 1px solid red; */
 }
 
 .actions-panel {
