@@ -43,8 +43,8 @@ export class WindowInstance {
 }
 
 interface WindowFactoryProperties {
-  title: string;
   componentPath: string;
+  title?: string;
   resizable?: boolean;
   width?: number;
   height?: number;
@@ -65,7 +65,11 @@ export function createWindow(properties: WindowFactoryProperties): string {
   let newWindow: WindowInstance = new WindowInstance();
   let newWindowId = v4();
   newWindow.id = newWindowId;
-  newWindow.title = properties.title;
+
+  if (properties.title)
+  {
+    newWindow.title = properties.title;
+  }
 
   if (properties.onClose) {
     newWindow.onClose = properties.onClose;
@@ -91,7 +95,7 @@ export function createWindow(properties: WindowFactoryProperties): string {
     newWindow.resizable = properties.resizable;
   }
 
-  newWindow.componentPath = properties.componentPath;
+  newWindow.componentPath = `./Window/${properties.componentPath}`;
 
   // Create global menu instance
   newWindow.globalMenu = new GlobalMenuInstance(newWindowId);

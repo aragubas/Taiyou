@@ -31,12 +31,9 @@ function toggleNotifications() {
   <div class="container" :class="autoHide ? 'autohide' : ''">
     <ul class="window-list">
       <li v-for="window in Sinas" :key="window.id">
-        <a
-          class="button"
-          :minimized="window.minimized"
-          @click="_focusWindow(window.id)"
-          >{{ window.title }}</a
-        >
+        <a class="button" :minimized="window.minimized" @click="_focusWindow(window.id)">
+          {{ window.title }}
+        </a>
       </li>
     </ul>
 
@@ -67,10 +64,7 @@ function toggleNotifications() {
     </div>
   </div>
 
-  <div
-    class="notifications-container"
-    :class="notificationsVisible ? 'notifications-show' : ''"
-  >
+  <div class="notifications-container" :class="notificationsVisible ? 'notifications-show' : ''">
     <header>
       <div class="notifications-header">
         <p>Notifications</p>
@@ -78,11 +72,7 @@ function toggleNotifications() {
     </header>
 
     <ol class="notifications">
-      <li
-        v-for="notification in NotificationList"
-        :key="notification.id"
-        class="notification"
-      >
+      <li v-for="notification in NotificationList" :key="notification.id" class="notification">
         <h1>{{ notification.title }}</h1>
         <p>{{ notification.message }}</p>
       </li>
@@ -215,6 +205,9 @@ function toggleNotifications() {
   overflow: hidden;
   text-overflow: ellipsis;
   border-radius: 4px;
+  border-color: red;
+  border-width: 1px;
+  border-style: solid;
 }
 
 .actions-panel {

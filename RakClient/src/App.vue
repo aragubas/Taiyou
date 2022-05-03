@@ -7,10 +7,8 @@ import ActionBar from "./components/ActionBar.vue";
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
 
-createWindow({
-  title: "Welcome Window",
-  componentPath: "./TaiyouHelloWorld.vue",
-});
+createWindow({componentPath: "TaiyouHelloWorld.vue"});
+
 </script>
 
 <template>
@@ -37,7 +35,7 @@ body {
 *::-webkit-scrollbar {
   width: 0.5rem;
   height: 0.5rem;
-  background: rgb(40, 42, 52);
+  background: rgb(40, 42, 48);
 }
 *::-webkit-scrollbar-thumb {
   background: rgba(50, 52, 62, 0.9);

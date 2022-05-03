@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onActivated, onMounted } from "@vue/runtime-core";
-import { ContextMenuItem, ContextMenuItemType } from "../ContextMenuItem";
-import { GlobalMenuItem } from "../global-menu";
-import { getInstance } from "../window-manager";
+import { ContextMenuItem, ContextMenuItemType } from "../../ContextMenuItem";
+import { GlobalMenuItem } from "../../global-menu";
+import { getInstance } from "../../window-manager";
 
 const props = defineProps<{ windowID: string }>();
 
@@ -23,8 +23,13 @@ onMounted(() => {
   <main>
     <div class="wrapper">
       <h1>Welcome to Taiyou</h1>
-      <p>Lorem ipsum dolor sit amet</p>
-      <code>{{ props.windowID }}</code>
+      <p>Windowed messaging app</p>
+      <code>WindowCode: {{ props.windowID }}</code>
+      <ul>
+        <li>
+          
+        </li>
+      </ul>
     </div>
   </main>
 </template>

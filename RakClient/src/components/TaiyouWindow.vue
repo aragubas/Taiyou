@@ -173,23 +173,11 @@ function focus() {
     @mousedown="focus"
   >
     <header>
-      <div
-        class="window-header"
-        @mousedown="moveMouseDown"
-        @mouseup="moveMouseUp"
-      >
+      <div class="window-header" @mousedown="moveMouseDown" @mouseup="moveMouseUp" >
         <div class="window-actions">
-          <a
-            class="window-button"
-            name="close"
-            @click="destroyWindow(props.windowID)"
-          ></a>
+          <a class="window-button" name="close" @click="destroyWindow(props.windowID)"></a>
 
-          <a
-            class="window-button"
-            name="minimize"
-            @click="getWindow().minimize()"
-          ></a>
+          <a class="window-button" name="minimize" @click="getWindow().minimize()"></a>
         </div>
         <p>{{ getWindow().title }}</p>
       </div>
@@ -199,13 +187,11 @@ function focus() {
       <component :is="component" :windowID="windowID" />
     </main>
 
-    <span
-      class="resize-handle"
-      @mousedown="resizeMouseDown"
-      @mouseup="resizeMouseUp"
-      v-if="getWindow().resizable"
-      >...</span
-    >
+    <span class="resize-handle" @mousedown="resizeMouseDown" @mouseup="resizeMouseUp" v-if="getWindow().resizable">
+      ...
+    </span>
+
+
   </div>
 </template>
 
@@ -303,7 +289,23 @@ main::-webkit-scrollbar {
   background: rgb(210, 142, 148);
 }
 
+.window-button[name="close"]:hover::before {
+  content: "🗙";
+  font-size: .6rem;
+  display: flex;
+  justify-content: center;
+  line-height: .8rem;
+}
+
 .window-button:hover {
   background: rgb(150, 152, 164);
+}
+
+.window-button[name="minimize"]:hover::before {
+  content: "🗕";
+  font-size: .7rem;
+  display: flex;
+  justify-content: center;
+  line-height: .5rem;
 }
 </style>
