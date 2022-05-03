@@ -31,6 +31,7 @@ onMounted(() => {
   window.addEventListener("resize", constraintGeometry)
 });
 
+// Center the window on the screen
 function CenterWindow()
 {
   getInstance(props.windowID).left = window.innerWidth / 2 - taiyouWindow.value.width / 2;
@@ -38,6 +39,7 @@ function CenterWindow()
 }
 
 function moveMouseMove(event: MouseEvent) {
+  event.preventDefault();
   if ((event.buttons || event.button) != 1) {
     moveEnd();
     return;
@@ -77,6 +79,7 @@ function moveEnd() {
 }
 
 function resizeMouseMove(event: MouseEvent) {
+  event.preventDefault();
   if ((event.buttons || event.button) != 1) {
     resizeEnd();
     return;
