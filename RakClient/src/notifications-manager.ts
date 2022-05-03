@@ -1,9 +1,9 @@
 import { v4 } from "uuid";
 
 class NotificationMessage {
+  id = v4();
   message: string;
   title: string;
-  id = v4();
   constructor(message: string, title: string) {
     this.message = message;
     this.title = title;

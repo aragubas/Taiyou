@@ -145,8 +145,7 @@ function toggleNotifications() {
 }
 
 .container {
-  transition: left 0.3s cubic-bezier(0.1, 0.53, 0.03, 0.96), opacity 0.25s ease,
-    background 0.25s ease;
+  transition: left 0.3s cubic-bezier(0.1, 0.53, 0.03, 0.96), opacity 0.25s ease, background 0.25s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -160,6 +159,8 @@ function toggleNotifications() {
   top: 1.4rem;
   overflow: hidden;
   z-index: 1;
+  box-shadow: 0px 0px 2px black;
+
 }
 
 .button-icon {

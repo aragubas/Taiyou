@@ -2,15 +2,10 @@
 import TaiyouWindow from "./components/TaiyouWindow.vue";
 import GlobalMenu from "./components/GlobalMenu.vue";
 import Sinas, { createWindow } from "./window-manager";
-import HiddenWindows from "./components/ActionBar.vue";
+import ActionBar from "./components/ActionBar.vue";
 
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-
-createWindow({
-  title: "Welcome Window",
-  componentPath: "./TaiyouHelloWorld.vue",
-});
 
 createWindow({
   title: "Welcome Window",
@@ -28,12 +23,12 @@ createWindow({
     >
     </TaiyouWindow>
   </main>
-  <HiddenWindows></HiddenWindows>
+  <ActionBar></ActionBar>
 </template>
 
 <style>
 body {
-  background: rgb(40, 42, 52);
+  background: linear-gradient(90deg, rgb(30, 40, 48), rgb(40, 42, 58));
   color: rgb(200, 200, 200);
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;

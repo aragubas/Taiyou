@@ -12,8 +12,7 @@ const props = defineProps<{ windowID: string }>();
 let moveMouseCapture = false;
 let moveMouseInitialX = 0;
 let moveMouseInitialY = 0;
-/* @vite-ignore */
-let component = defineAsyncComponent(() => import(getWindow().componentPath));
+let component = defineAsyncComponent(() => import( /* @vite-ignore */ getWindow().componentPath));
 
 let resizeMouseCapture = false;
 let resizeMouseInitialX = 0;
@@ -203,7 +202,7 @@ function focus() {
       </div>
     </header>
 
-    <main :id="'taiyouwindow-' + windowID">
+    <main>
       <component :is="component" :windowID="windowID" />
     </main>
 
@@ -275,7 +274,7 @@ main::-webkit-scrollbar {
   height: 1.5rem;
   padding: 0 0.3rem;
   user-select: none;
-  background: linear-gradient(rgba(70, 72, 84, 0.3) 0%, transparent);
+  background: rgba(70, 72, 84, 0.3);
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
 }
