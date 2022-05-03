@@ -5,39 +5,24 @@ import { ContextMenuItem, ContextMenuItemType } from "../ContextMenuItem";
 const props = defineProps<{ items: Array<ContextMenuItem>, x: number, y: number }>();
 const event = defineEmits(['onClose'])
 
-const computed_x = computed(() => {
-  const element = document.getElementById('context-menu');
-  const width = Number(element?.style.width);
-  const height = Number(element?.style.width);
-
-  if (props.x + width >= window.innerWidth)
-  {
-    return window.innerWidth - width;
-  }
-
-  if (props.y + height >= window.innerHeight)
-  {
-    return window.innerHeight - height;
-  }
-
-
-});
-
+function blur()
+{
+  event('onClose', {});
+}
 
 </script>
 
 <template>
-  <ol :style="{'left': `${x}px`, 'top': `${y}px`}" id="context-menu">
+  <ol :style="{'left': `${x}px`, 'top': `${y}px`}" id="context-menu" @pointerleave="$emit('onClose')">
     <li v-for="item in items">
-      <a v-if="item.type == ContextMenuItemType.Button">{{ item.text }}</a>
+      <a v-if="item.type == ContextMenuItemType.Button" @click="item.callback">{{ item.text }}</a>
       <span class="separator" v-if="item.type == ContextMenuItemType.Separator"></span>
     </li>
   </ol>  
 </template>
 
 <style scoped>
-ol
-{
+ol {
   list-style-type: none;
   background: linear-gradient(rgb(60, 62, 68), rgb(50, 52, 58));
   position: fixed;
@@ -53,21 +38,18 @@ ol
 
 }
 
-a
-{
+a {
   display: block;
   padding: .2rem;
   border-radius: .2rem;
 }
 
-a:hover
-{
+a:hover {
   background: rgb(80, 82, 88);
   cursor: pointer;
 }
 
-.separator
-{
+.separator {
   display: block;
   height: 1px;
   width: 100%;

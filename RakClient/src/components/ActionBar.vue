@@ -78,6 +78,7 @@ function toggleNotifications() {
       </li>
     </ol>
   </div>
+  
 </template>
 
 <style scoped>

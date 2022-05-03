@@ -19,12 +19,18 @@ function getFocusedWindow(): WindowInstance | undefined {
 
 function menuItemClick(item: GlobalMenuItem)
 {
-  contextMenuActive.value = true;
-   
-  if (item.context_menu != undefined)
+  if (item.context_menu)
   {
-    items.value = item.context_menu
-  } 
+      contextMenuActive.value = true;
+      
+      if (item.context_menu != undefined)
+      {
+        items.value = item.context_menu
+      } 
+  }else
+  {
+    if (item.callback) { item.callback(); }
+  }
 }
 
 function mouseMove(event: MouseEvent)
@@ -32,6 +38,11 @@ function mouseMove(event: MouseEvent)
   if (contextMenuActive.value) { return; }
   x.value = event.x;
   y.value = event.y;
+}
+
+function contextMenuClose()
+{
+  contextMenuActive.value = false;
 }
 
 </script>
@@ -48,9 +59,10 @@ function mouseMove(event: MouseEvent)
         </li>
       </ul>
     </div>
+  
+    <ContextMenu :items="items" :x="x" :y="y" v-if="contextMenuActive" @on-close="contextMenuClose"></ContextMenu>
   </div>
 
-  <ContextMenu :items="items" :x="x" :y="y" v-if="contextMenuActive"></ContextMenu>
 </template>
 
 <style scoped>
