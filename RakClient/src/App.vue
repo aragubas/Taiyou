@@ -3,11 +3,20 @@ import TaiyouWindow from "./components/TaiyouWindow.vue";
 import GlobalMenu from "./components/GlobalMenu.vue";
 import Sinas, { createWindow } from "./window-manager";
 import ActionBar from "./components/ActionBar.vue";
+import { LoadCredentials } from "./Credentials";
 
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
 
-createWindow({componentPath: "Welcome.vue", width: 600, height: 600});
+// Create account window if no credentials are found
+if (localStorage.getItem("credentials") == null)
+{
+  createWindow({componentPath: "TaiyouAccount.vue", width: 400, height: 300, closeable: false});
+}else
+{
+  LoadCredentials();
+  createWindow({componentPath: "Welcome.vue", width: 800, height: 600});
+}
 
 </script>
 
@@ -67,5 +76,11 @@ input[type="text"]
   padding: .2rem;
   border-radius: 4px;
   color: white;
+}
+
+*:focus
+{
+  outline: none;
+  box-shadow: 0px 0px 2px rgb(230, 232, 238);
 }
 </style>

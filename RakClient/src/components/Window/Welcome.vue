@@ -5,6 +5,7 @@ import { ContextMenuItem, ContextMenuItemType } from "../../ContextMenuItem";
 import { GlobalMenuItem } from "../../global-menu";
 import { getInstance } from "../../window-manager";
 import { Manager } from "socket.io-client";
+import { credentials } from "../../Credentials"
 
 function fileMenu() {
   alert("File Menu!");
@@ -15,46 +16,37 @@ function thingMenu()
   alert("thing");
 }
 
+const props = defineProps<{ windowID: string }>();
+
 onMounted(() => {
   getInstance(props.windowID).title = "Chat Test";
 
   // Global Menu test items
   getInstance(props.windowID).globalMenu?.items.push(new GlobalMenuItem("File", undefined, new Array<ContextMenuItem>(new ContextMenuItem(ContextMenuItemType.Button, 'Test', fileMenu), new ContextMenuItem(ContextMenuItemType.Separator), new ContextMenuItem(ContextMenuItemType.Button, "Thing", thingMenu))));
   getInstance(props.windowID).globalMenu?.items.push(new GlobalMenuItem("Thing", thingMenu))
-
-  messages.value.push(new Message("Server", "Connecting..."))
 });
 
 
-class Message
+interface Message
 {
   username: string;
   content: string;
   id: string;
-
-  constructor(username: string, content: string)
-  {
-    this.username = username;
-    this.content = content;
-    this.id = v4();
-  }
 }
 
-const props = defineProps<{ windowID: string }>();
 const messages = ref(Array<Message>());
 const manager = new Manager("http://localhost:3313");
 const socket = manager.socket("/");
 let message = ref("");
 
-socket.on("message", async (data) => {
-  messages.value.push(new Message("Server", data));
+socket.on("receive-message", async (data) => {
+  messages.value.push(JSON.parse(data) as Message);
 })
 
 function sendMessage()
 {
-  socket.emit("message", message.value);
+  socket.emit("message", JSON.stringify({ content: message.value, username: credentials.value.username }));
   message.value = "";
-  console.log("send-ceira")
 }
 
 </script>
@@ -90,9 +82,10 @@ function sendMessage()
 ol
 {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   overflow-y: scroll;
   margin-bottom: .5rem;
+  gap: .5rem;
 }
 
 .chat-controls

@@ -9,6 +9,7 @@ export class WindowInstance {
   componentPath: string = "";
   minimized: boolean = false;
   resizable: boolean = true;
+  closeable: boolean = true;
   width: number = 400;
   height: number = 320;
   minWidth: number = 200;
@@ -46,6 +47,7 @@ interface WindowFactoryProperties {
   componentPath: string;
   title?: string;
   resizable?: boolean;
+  closeable?: boolean;
   width?: number;
   height?: number;
   minWidth?: number;
@@ -93,6 +95,10 @@ export function createWindow(properties: WindowFactoryProperties): string {
 
   if (properties.resizable != undefined) {
     newWindow.resizable = properties.resizable;
+  }
+
+  if (properties.closeable != undefined) {
+    newWindow.closeable = properties.closeable;
   }
 
   newWindow.componentPath = `./Window/${properties.componentPath}`;

@@ -177,7 +177,7 @@ function focus() {
     <header>
       <div class="window-header" @mousedown="moveMouseDown" @mouseup="moveMouseUp" >
         <div class="window-actions">
-          <a class="window-button" name="close" @click="destroyWindow(props.windowID)"></a>
+          <a class="window-button" name="close" @click="destroyWindow(props.windowID)" v-if="taiyouWindow.closeable"></a>
 
           <a class="window-button" name="minimize" @click="taiyouWindow.minimize()"></a>
         </div>
