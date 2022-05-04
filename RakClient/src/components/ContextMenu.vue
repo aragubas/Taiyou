@@ -8,17 +8,22 @@ const event = defineEmits(['onClose'])
 var mouseOut = ref(false);
 
 onMounted(() => {
-  document.addEventListener("click", testClose);
+  document.addEventListener("click", clickOutside);
 });
 
 onUnmounted(() => {
-  document.removeEventListener("click", testClose);
+  document.removeEventListener("click", clickOutside);
 });
 
-function testClose()
+function clickOutside()
 {
-  console.log(mouseOut.value);
   if (!mouseOut.value) { return; }
+  event('onClose', {});
+}
+
+function clickItem(item: ContextMenuItem)
+{
+  if (item.callback) { item.callback(); }
   event('onClose', {});
 }
 
@@ -27,7 +32,7 @@ function testClose()
 <template>
   <ol :style="{'left': `${x}px`, 'top': `${y}px`}" id="context-menu" @mouseenter="mouseOut = false" @mouseleave="mouseOut = true">
     <li v-for="item in items">
-      <a v-if="item.type == ContextMenuItemType.Button" @click="item.callback">{{ item.text }}</a>
+      <a v-if="item.type == ContextMenuItemType.Button" @click="clickItem(item)">{{ item.text }}</a>
       <span class="separator" v-if="item.type == ContextMenuItemType.Separator"></span>
     </li>
   </ol>  

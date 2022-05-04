@@ -8,9 +8,9 @@ export class ContextMenuItem
 {
   type: ContextMenuItemType;
   text: string | undefined;
-  callback: ((event: MouseEvent) => void) | undefined;
+  callback: (() => void) | undefined;
  
-  constructor(type: ContextMenuItemType, text: string | undefined = undefined, callback: ((event: MouseEvent) => void) | undefined = undefined)
+  constructor(type: ContextMenuItemType, text: string | undefined = undefined, callback: (() => void) | undefined = undefined)
   {
     this.type = type;
     this.text = text; 

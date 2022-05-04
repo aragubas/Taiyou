@@ -36,8 +36,9 @@ function menuItemClick(item: GlobalMenuItem)
 function mouseMove(event: MouseEvent)
 {
   if (contextMenuActive.value) { return; }
-  x.value = event.x - 3;
-  y.value = event.y - 3;
+
+  x.value = event.x;
+  y.value = document.getElementsByClassName("container")[0].getBoundingClientRect().height;
 }
 
 function contextMenuClose()
