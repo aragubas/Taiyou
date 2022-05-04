@@ -1,19 +1,31 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { ContextMenuItem, ContextMenuItemType } from "../ContextMenuItem";
 
 const props = defineProps<{ items: Array<ContextMenuItem>, x: number, y: number }>();
 const event = defineEmits(['onClose'])
 
-function blur()
+var mouseOut = ref(false);
+
+onMounted(() => {
+  document.addEventListener("click", testClose);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", testClose);
+});
+
+function testClose()
 {
+  console.log(mouseOut.value);
+  if (!mouseOut.value) { return; }
   event('onClose', {});
 }
 
 </script>
 
 <template>
-  <ol :style="{'left': `${x}px`, 'top': `${y}px`}" id="context-menu" @pointerleave="$emit('onClose')">
+  <ol :style="{'left': `${x}px`, 'top': `${y}px`}" id="context-menu" @mouseenter="mouseOut = false" @mouseleave="mouseOut = true">
     <li v-for="item in items">
       <a v-if="item.type == ContextMenuItemType.Button" @click="item.callback">{{ item.text }}</a>
       <span class="separator" v-if="item.type == ContextMenuItemType.Separator"></span>

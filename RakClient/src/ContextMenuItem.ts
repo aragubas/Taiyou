@@ -7,10 +7,10 @@ export enum ContextMenuItemType
 export class ContextMenuItem
 {
   type: ContextMenuItemType;
-  text: string;
-  callback: ((event: MouseEvent) => void);
+  text: string | undefined;
+  callback: ((event: MouseEvent) => void) | undefined;
  
-  constructor(type: ContextMenuItemType, text: string = "", callback: ((event: MouseEvent) => void))
+  constructor(type: ContextMenuItemType, text: string | undefined = undefined, callback: ((event: MouseEvent) => void) | undefined = undefined)
   {
     this.type = type;
     this.text = text; 

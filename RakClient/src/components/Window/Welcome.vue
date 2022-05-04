@@ -13,13 +13,12 @@ function fileMenu() {
 function thingMenu()
 {
   alert("thing");
-
 }
 
 onMounted(() => {
   getInstance(props.windowID).title = "Welcome to Taiyou";
 
-  getInstance(props.windowID).globalMenu?.items.push(new GlobalMenuItem("File", undefined, new Array<ContextMenuItem>(new ContextMenuItem(ContextMenuItemType.Button, 'Test', fileMenu))))
+  getInstance(props.windowID).globalMenu?.items.push(new GlobalMenuItem("File", undefined, new Array<ContextMenuItem>(new ContextMenuItem(ContextMenuItemType.Button, 'Test', fileMenu), new ContextMenuItem(ContextMenuItemType.Separator), new ContextMenuItem(ContextMenuItemType.Button, "Thing", thingMenu))));
   getInstance(props.windowID).globalMenu?.items.push(new GlobalMenuItem("Thing", thingMenu))
 });
 </script>
