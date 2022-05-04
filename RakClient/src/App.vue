@@ -7,7 +7,7 @@ import ActionBar from "./components/ActionBar.vue";
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
 
-createWindow({componentPath: "Welcome.vue"});
+createWindow({componentPath: "Welcome.vue", width: 600, height: 600});
 
 </script>
 
@@ -49,7 +49,7 @@ h1 {
   margin: 0;
 }
 
-ul {
+ul, ol {
   margin: 0;
   padding: 0;
   list-style-type: none;
@@ -58,5 +58,14 @@ ul {
 a {
   text-decoration: none;
   color: inherit;
+}
+
+input[type="text"]
+{
+  background: rgb(60, 62, 68);
+  border: none;
+  padding: .2rem;
+  border-radius: 4px;
+  color: white;
 }
 </style>

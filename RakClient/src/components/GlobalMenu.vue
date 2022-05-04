@@ -19,6 +19,8 @@ function getFocusedWindow(): WindowInstance | undefined {
 
 function menuItemClick(item: GlobalMenuItem)
 {
+  contextMenuActive.value = false;
+  
   if (item.context_menu)
   {
       contextMenuActive.value = true;

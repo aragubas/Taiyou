@@ -1,13 +1,13 @@
 services:
-  db:
-    image: mysql
-    restart: always
-
-    command: --default-authentication-plugin=mysql_native_password
+  mongo:
+    image: mongo
 
     environment:
-      - MYSQL_ROOT_PASSWORD=zumbazumba
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=zumbazumba
 
+    volumes:
+      - ./DB:/mongo/
+    
     ports:
-      - 3306:3306
-      
+      - 27017:27017

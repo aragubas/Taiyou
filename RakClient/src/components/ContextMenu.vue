@@ -8,11 +8,11 @@ const event = defineEmits(['onClose'])
 var mouseOut = ref(false);
 
 onMounted(() => {
-  document.addEventListener("click", clickOutside);
+  document.addEventListener("mousedown", clickOutside);
 });
 
 onUnmounted(() => {
-  document.removeEventListener("click", clickOutside);
+  document.removeEventListener("mousedown", clickOutside);
 });
 
 function clickOutside()
@@ -50,9 +50,9 @@ ol {
   flex-flow: column;
   gap: .2rem;
   border-radius: .2rem;
-  box-shadow: 0px 0px 2px rgba(0, 0, 0, .5);
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, .5);
   font-size: 0.8rem;
-
+  user-select: none;
 }
 
 a {
