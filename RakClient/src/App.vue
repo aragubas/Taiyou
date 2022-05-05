@@ -12,6 +12,7 @@ import { LoadCredentials } from "./Credentials";
 if (localStorage.getItem("credentials") == null)
 {
   createWindow({componentPath: "TaiyouAccount.vue", width: 400, height: 300, closeable: false});
+  createWindow({componentPath: "TaiyouAccount.vue", width: 400, height: 300, closeable: false});
 }else
 {
   LoadCredentials();

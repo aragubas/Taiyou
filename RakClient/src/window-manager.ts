@@ -29,7 +29,6 @@ export class WindowInstance {
 
   restore() {
     this.minimized = false;
-    focusedWindow.value = this.id;
     focusWindow(this.id);
     this.onRestore();
   }
@@ -37,8 +36,10 @@ export class WindowInstance {
   toggleMinimize() {
     if (!this.minimized) {
       this.minimize();
+
     } else {
       this.restore();
+
     }
   }
 }
@@ -122,6 +123,7 @@ export function destroyWindow(id: string) {
 }
 
 export function focusWindow(id: string, unminimize: boolean = false) {
+  if (id == "") { focusedWindow.value = ""; }
   if (id === focusedWindow.value) { return; }
   // Move item with id to start of array
   const index = Sinas.value.findIndex((item) => item.id === id);

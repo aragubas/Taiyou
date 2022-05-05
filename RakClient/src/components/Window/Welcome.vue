@@ -46,6 +46,7 @@ socket.on("receive-message", async (data) => {
 function sendMessage()
 {
   socket.emit("message", JSON.stringify({ content: message.value, username: credentials.value.username }));
+
   message.value = "";
 }
 

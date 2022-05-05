@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getInstance } from "../../window-manager";
+import { createWindow, destroyWindow, getInstance } from "../../window-manager";
 
 import { onMounted, ref } from "vue";
 import { LoadCredentials, SaveCredentials } from "../../Credentials";
@@ -7,15 +7,18 @@ import { LoadCredentials, SaveCredentials } from "../../Credentials";
 const props = defineProps<{ windowID: string }>();
 
 let username = ref("")
+let password = ref("")
 
 onMounted(() => {
   getInstance(props.windowID).title = "Account Setup";
+  getInstance(props.windowID).resizable = false;
 });
 
 function login()
 {
   SaveCredentials(username.value);
-  window.location.reload();
+  destroyWindow(props.windowID);
+  createWindow({componentPath: "Welcome.vue", width: 800, height: 600});
 }
  
 </script>
@@ -28,7 +31,12 @@ function login()
     <form class="userpanel-form" v-on:submit.prevent="login">
       <label for="username">Username</label>
       <input required type="text" v-model="username" id="username" />
-      <input type="submit" value="Submit" />
+
+      <label for="password">Password</label>
+      <input required type="text" v-model="password" id="password" />
+
+
+      <input type="submit" value="Login" />
     </form>
   </div>
   
@@ -39,11 +47,17 @@ form
 {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: .5rem;
+}
+
+label
+{
+  font-size: .8rem;
 }
 
 input[type="submit"]
 {
+  margin-top: 1rem;
   border: none;
   background: rgb(60, 62, 68);
   padding: .3rem;

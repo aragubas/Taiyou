@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, onUnmounted } from "vue";
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from "vue";
 import {
   focusWindow,
   getInstance,
@@ -9,6 +9,7 @@ import {
 
 const props = defineProps<{ windowID: string }>();
 
+let unfocused = ref(true);
 let moveMouseCapture = false;
 let moveMouseInitialX = 0;
 let moveMouseInitialY = 0;
@@ -28,7 +29,7 @@ onUnmounted(() => {
 onMounted(() => {
   CenterWindow();
 
-  window.addEventListener("resize", constraintGeometry)
+  window.addEventListener("resize", constraintGeometry);
 });
 
 // Center the window on the screen

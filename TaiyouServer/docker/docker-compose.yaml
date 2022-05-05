@@ -1,13 +1,14 @@
 services:
-  mongo:
-    image: mongo
+  taiyouServer:
+    image: mysql
+    container_name: mysql_container
+
+    command: --default-authentication-plugin=mysql_native_password
+
+    ports:
+      - 3306:3306
 
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=zumbazumba
+      - MYSQL_ROOT_PASSWORD=zumbazumba
 
-    volumes:
-      - ./DB:/mongo/
     
-    ports:
-      - 27017:27017
