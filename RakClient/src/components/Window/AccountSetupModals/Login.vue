@@ -31,7 +31,7 @@ async function login()
 
   if (response == undefined)
   {
-    errorMessage.value = "A very Unknown error.";
+    errorMessage.value = "A very Unknown error happened.";
 
   }else
   {

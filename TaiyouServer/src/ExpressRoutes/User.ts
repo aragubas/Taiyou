@@ -56,8 +56,36 @@ router.post("/", async (request, response) =>{
 
   const newUser = await prisma.user.create({ data: { email: createRequest.email, password: createRequest.password, username: createRequest.username } })
 
-  response.send(newUser)
+  response.send(new GetUserResponse(await getUserToken(newUser.id), newUser.id, newUser.username));
 })
+
+async function getUserToken(userID: string) : Promise<string>
+{
+  const storedToken = await prisma.sessionToken.findUnique({
+    where:
+    {
+      ownerID: userID,
+    }
+  })
+
+  // Create access token if it doesn't exist
+  if (storedToken == null)
+  {
+    // Create token
+    const token = `${v4()}.${new Date().getTime()}`;
+
+    const newStoredToken = await prisma.sessionToken.create({
+      data: {
+        token: token,
+        ownerID: userID,
+      }
+    })
+    
+    return token;
+  }
+  
+  return storedToken.token;
+}
 
 // Get me request
 router.get("/", async (request, response) =>{
@@ -90,29 +118,5 @@ router.get("/", async (request, response) =>{
     return;
   }
 
-  const storedToken = await prisma.sessionToken.findUnique({
-    where:
-    {
-      ownerID: user.id,
-    }
-  })
-
-  // Create access token if it doesn't exist
-  if (storedToken == null)
-  {
-    // Create token
-    const token = `${v4()}.${new Date().getTime()}`;
-
-    const newStoredToken = await prisma.sessionToken.create({
-      data: {
-        token: token,
-        ownerID: user.id,
-      }
-    })
-    
-    response.send(new GetUserResponse(token, user.id, user.username));
-    return;
-  }
-
-  response.send(new GetUserResponse(storedToken.token, storedToken.ownerID, user.username));
+  response.send(new GetUserResponse(await getUserToken(user.id), user.id, user.username));
 })
