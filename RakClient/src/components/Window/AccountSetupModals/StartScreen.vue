@@ -12,7 +12,7 @@ const emit = defineEmits(["goto"])
 
     <ul>
       <li><button class="button" @click="emit('goto', 1)" tabindex="0">Login</button></li>
-      <li><button class="button" @click="emit('goto', 0)" tabindex="0">Register</button></li>
+      <li><button class="button" @click="emit('goto', 2)" tabindex="0">Register</button></li>
     </ul>
   </div>
 </template>

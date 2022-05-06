@@ -11,7 +11,7 @@ import { LoadCredentials } from "./Credentials";
 // Create account window if no credentials are found
 if (localStorage.getItem("credentials") == null)
 {
-  createWindow({componentPath: "AccountSetup.vue", width: 440, height: 320, closeable: false});
+  createWindow({componentPath: "AccountSetup.vue", width: 440, height: 340, closeable: false});
 }else
 {
   LoadCredentials();

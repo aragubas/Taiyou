@@ -3,6 +3,7 @@ import { computed, onMounted,  ref,  shallowRef, watch } from "@vue/runtime-dom"
 import { GlobalMenuItem } from "../../global-menu";
 import { createWindow, destroyWindow, getInstance } from "../../window-manager";
 import Login from "./AccountSetupModals/Login.vue";
+import Register from "./AccountSetupModals/Register.vue";
 import StartScreen from "./AccountSetupModals/StartScreen.vue";
 const props = defineProps<{ windowID: string }>();
 
@@ -56,6 +57,9 @@ const currentView = (id: number): any =>
 
     case 1:
       return Login;
+
+    case 2:
+      return Register;
 
     default:
       return StartScreen;

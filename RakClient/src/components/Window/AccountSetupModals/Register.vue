@@ -1,87 +1,37 @@
-<script setup lang="ts">
-import { Axios } from "axios";
-import { onMounted, ref } from "vue";
-import { LoadCredentials, SaveCredentials } from "../../../Credentials";
+<script setup lang="ts">import { ref } from '@vue/runtime-dom';
 
+const emit = defineEmits(["goto", "toggle_backbutton"])
+ 
 let email = ref("")
 let password = ref("")
 let loading = ref(false)
 let errorMessage = ref("");
+ 
 
-const emit = defineEmits(["goto", "toggle_backbutton"])
-
-interface ErrorResponse
-{
-  message: string;
-}
-
-interface SuccessfulResponse
-{
-  access_token: string;
-  user_id: string;
-  username: string;
-}
-
-async function login()
-{  
-  errorMessage.value = "";
-  
-  const request = new Axios({
-    baseURL: "http://localhost:3314",
-    headers: {
-      "Content-Type": "application/json",
-    }
-  });
-
-  const thing = await request.get("/user", { auth: { username: email.value, password: password.value } });
-
-  if (thing.status == 401)
-  {
-    const response = JSON.parse(thing.data) as ErrorResponse;
-
-    switch(response.message)
-    {
-      case "invalid_credentials":
-        errorMessage.value = "Invalid username or password.";
-        break;
-      
-      default:
-        errorMessage.value = "Unknown error.";
-        break;
-    }
-  } else if (thing.status == 200)
-  {
-    const response = JSON.parse(thing.data) as SuccessfulResponse;
-
-    SaveCredentials(response.access_token, response.user_id, response.username);
-
-  }
-
-  loading.value = false;
-  emit("toggle_backbutton");
-}
 
 function formPayload()
 {
-  // Prevent calling login twice if already loading
+
+  // Prevent calling register twice
   if (loading.value) { return; }
-  emit("toggle_backbutton");
 
   loading.value = true;
-  login();
 }
- 
+
 </script>
 
 <template>
-  <div class="wrapper" :class="[loading ? 'loading' : '']">
+  <div class="wrapper">
     <span class="loading-bar" :class="[loading ? 'loading' : '']"></span>
     
     <form class="userpanel-form" :class="[loading ? 'loading' : '', errorMessage != '' ? 'error' : '']" v-on:submit.prevent="formPayload">
       <header>
-        <h1>Login</h1>
-        <p>Fill all boxes below to get started.</p>
+        <h1>Register</h1>
+        <p>Fill all boxes below to get started!</p>
       </header>
+
+      <label for="username">Username {{errorMessage != '' ? ` - ${errorMessage}` : ''}}</label>
+      <input required type="text" v-model="email" id="username" autocomplete="username" :tabindex="loading ? '-1' : ''" />
 
       <label for="email">Email {{errorMessage != '' ? ` - ${errorMessage}` : ''}}</label>
       <input required type="email" v-model="email" id="email" autocomplete="email" :tabindex="loading ? '-1' : ''" />
@@ -91,8 +41,9 @@ function formPayload()
 
       <input type="submit" value="Login" :tabindex="loading ? '-1' : ''" />
     </form>
+
   </div>
-  
+
 </template>
 
 <style scoped>
