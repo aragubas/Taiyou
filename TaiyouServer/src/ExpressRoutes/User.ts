@@ -6,9 +6,11 @@ import BasicAuthHeaderDecode from '../Utils/BasicAuthHeaderDecode';
 
 let router = Router();
 const prisma = new PrismaClient();
+export default router;
 
-interface GetUserRequest
+interface CreateUserRequest
 {
+  username: string;
   email: string;
   password: string;
 }
@@ -35,6 +37,29 @@ class GetUserResponse extends GenericResponse
   }
 }
 
+// Create a new user
+router.post("/", async (request, response) =>{
+  const createRequest = (request.body as CreateUserRequest);
+
+  // TODO: Check if request data is correct
+
+  // Check if user already exists
+  const userUsername = await prisma.user.findUnique({ where: { username: createRequest.username } });
+  const userEmail = await prisma.user.findUnique({ where: { email: createRequest.email } })
+
+  if (userUsername != null || userEmail != null)
+  {
+    response.statusCode = 400;
+    response.send(new GenericResponse("user_already_exists"));
+    return;
+  }
+
+  const newUser = await prisma.user.create({ data: { email: createRequest.email, password: createRequest.password, username: createRequest.username } })
+
+  response.send(newUser)
+})
+
+// Get me request
 router.get("/", async (request, response) =>{
   // Check if authorization header is present
   if (request.headers.authorization == undefined)
@@ -54,14 +79,14 @@ router.get("/", async (request, response) =>{
   // Check if user exists
   if (user == null)
   {
-    response.status(401).send(JSON.stringify(new GenericResponse("invalid_credentials")));
+    response.status(401).send(new GenericResponse("invalid_credentials"));
     return;
   }
 
   // Check if password is valid
   if (user.password != getUserRequest.password)
   {
-    response.status(401).send(JSON.stringify(new GenericResponse("invalid_credentials")));
+    response.status(401).send(new GenericResponse("invalid_credentials"));
     return;
   }
 
@@ -85,11 +110,9 @@ router.get("/", async (request, response) =>{
       }
     })
     
-    response.send(JSON.stringify(new GetUserResponse(token, user.id, user.username)));
+    response.send(new GetUserResponse(token, user.id, user.username));
     return;
   }
 
-  response.send(JSON.stringify(new GetUserResponse(storedToken.token, storedToken.ownerID, user.username)));
+  response.send(new GetUserResponse(storedToken.token, storedToken.ownerID, user.username));
 })
-
-export default router;

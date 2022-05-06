@@ -1,13 +1,62 @@
-<script setup lang="ts">import { ref } from '@vue/runtime-dom';
+<script setup lang="ts">
+import { Axios } from "axios";
+import { ref } from '@vue/runtime-dom';
 
 const emit = defineEmits(["goto", "toggle_backbutton"])
  
+let username = ref("")
 let email = ref("")
 let password = ref("")
 let loading = ref(false)
 let errorMessage = ref("");
  
+interface ErrorResponse
+{
+  message: string;
+}
 
+interface SuccessfulResponse
+{
+  id: string;
+  username: string;
+  email: string;
+  password: string;
+}
+
+async function register()
+{
+  errorMessage.value = "";
+
+  const request = new Axios({
+    baseURL: "http://localhost:3314",
+    headers: {
+      "Content-Type": "application/json",
+    }
+  });
+
+  const thing = await request.post("/user", { username: username.value, email: email.value, password: password.value });
+
+  console.log(thing.data);
+
+  if (thing.status == 400)
+  {
+    const response = JSON.parse(thing.data) as ErrorResponse;
+
+    if (response.message == "user_already_exists")
+    {
+      errorMessage.value = "This user already exists.";
+    }
+  }
+
+  if (thing.status == 200)
+  {
+    const response = JSON.parse(thing.data) as SuccessfulResponse;
+
+    
+
+  }
+
+}
 
 function formPayload()
 {
@@ -31,7 +80,7 @@ function formPayload()
       </header>
 
       <label for="username">Username {{errorMessage != '' ? ` - ${errorMessage}` : ''}}</label>
-      <input required type="text" v-model="email" id="username" autocomplete="username" :tabindex="loading ? '-1' : ''" />
+      <input required type="text" v-model="username" id="username" autocomplete="username" :tabindex="loading ? '-1' : ''" />
 
       <label for="email">Email {{errorMessage != '' ? ` - ${errorMessage}` : ''}}</label>
       <input required type="email" v-model="email" id="email" autocomplete="email" :tabindex="loading ? '-1' : ''" />

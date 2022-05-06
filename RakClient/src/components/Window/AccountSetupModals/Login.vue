@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Axios } from "axios";
 import { onMounted, ref } from "vue";
+import { Login } from "../../../API/api";
 import { LoadCredentials, SaveCredentials } from "../../../Credentials";
 
 let email = ref("")
@@ -26,34 +27,23 @@ async function login()
 {  
   errorMessage.value = "";
   
-  const request = new Axios({
-    baseURL: "http://localhost:3314",
-    headers: {
-      "Content-Type": "application/json",
-    }
-  });
+  const response = await Login(email.value, password.value);
 
-  const thing = await request.get("/user", { auth: { username: email.value, password: password.value } });
-
-  if (thing.status == 401)
+  if (response == undefined)
   {
-    const response = JSON.parse(thing.data) as ErrorResponse;
+    errorMessage.value = "A very Unknown error.";
 
-    switch(response.message)
+  }else
+  {
+    // Successfully logged in
+    if (response.success)
     {
-      case "invalid_credentials":
-        errorMessage.value = "Invalid username or password.";
-        break;
-      
-      default:
-        errorMessage.value = "Unknown error.";
-        break;
-    }
-  } else if (thing.status == 200)
-  {
-    const response = JSON.parse(thing.data) as SuccessfulResponse;
+      console.log("Successfully logged in!!!");
 
-    SaveCredentials(response.access_token, response.user_id, response.username);
+    }else
+    {
+      errorMessage.value = response.message;
+    }
 
   }
 
