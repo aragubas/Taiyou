@@ -8,7 +8,7 @@ let password = ref("")
 let loading = ref(false)
 let errorMessage = ref("");
 
-const emit = defineEmits(["goto"])
+const emit = defineEmits(["goto", "toggle_backbutton"])
 
 interface ErrorResponse
 {
@@ -58,12 +58,14 @@ async function login()
   }
 
   loading.value = false;
+  emit("toggle_backbutton");
 }
 
 function formPayload()
 {
   // Prevent calling login twice if already loading
   if (loading.value) { return; }
+  emit("toggle_backbutton");
 
   loading.value = true;
   login();
@@ -135,10 +137,18 @@ input[type="submit"]
   margin-top: 1rem;
   border: none;
   background: rgb(60, 62, 68);
-  padding: .3rem;
+  padding: .5rem;
   color: white;
   border-radius: 4px;
+  align-self: flex-start;
 }
+
+input[type="submit"]:hover
+{
+  background: rgb(70, 72, 78);
+  cursor: pointer;
+}
+
 
 input[type="submit"]:active
 {
@@ -154,7 +164,6 @@ input[type="submit"]:active
   right: 0%;
 }
 
-
 .loading-bar
 {
   position: absolute;
@@ -162,7 +171,7 @@ input[type="submit"]:active
   right: 0;
   top: 0;
   height: 4px;
-  background: rgb(60, 62, 68);
+  background: rgba(70, 72, 84, 0.3);
   opacity: 0;
   transform: scaleY(0%);
   transform-origin: top center;

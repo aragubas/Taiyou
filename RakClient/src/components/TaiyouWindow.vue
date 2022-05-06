@@ -257,7 +257,7 @@ main::-webkit-scrollbar {
   height: 1.5rem;
   padding: 0 0.3rem;
   user-select: none;
-  background: rgba(70, 72, 84, 0.3);
+  background: rgba(70, 72, 84, .3);
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
 }

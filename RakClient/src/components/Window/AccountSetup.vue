@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted,  ref,  shallowRef } from "@vue/runtime-dom";
+import { computed, onMounted,  ref,  shallowRef, watch } from "@vue/runtime-dom";
+import { GlobalMenuItem } from "../../global-menu";
 import { createWindow, destroyWindow, getInstance } from "../../window-manager";
 import Login from "./AccountSetupModals/Login.vue";
 import StartScreen from "./AccountSetupModals/StartScreen.vue";
@@ -7,7 +8,29 @@ const props = defineProps<{ windowID: string }>();
 
 
 let screenID = ref(0);
+let backbutton_hidden = ref(true);
 
+watch(screenID, () =>{
+  if (screenID.value == 0) 
+  { 
+    backbutton_hidden.value = true; 
+  
+  }else {
+    backbutton_hidden.value = false;
+  }
+
+})
+
+watch(backbutton_hidden, (newValue: boolean) =>{
+  if (!newValue)
+  {
+    getInstance(props.windowID).globalMenu?.items.push(new GlobalMenuItem("Back to Start Screen", () => { screenID.value = 0; }));
+
+  }else
+  {
+    getInstance(props.windowID).globalMenu?.items.splice(0, getInstance(props.windowID).globalMenu?.items.length);
+  }
+})
 
 onMounted(() => {
   getInstance(props.windowID).title = "Account Setup";
@@ -17,6 +40,11 @@ onMounted(() => {
 function goto(screenid: number)
 {
   screenID.value = screenid;
+}
+
+function toggle_backbutton()
+{
+  backbutton_hidden.value = !backbutton_hidden.value;
 }
 
 const currentView = (id: number): any =>
@@ -38,12 +66,8 @@ const currentView = (id: number): any =>
 
 <template>
   <div class="wrapper">
-    <header :class="screenID == 0 ? 'hide' : ''">
-      <a class="button" @click="screenID = 0">Back</a>
-    </header>
-
     <Transition>
-      <component :is="currentView(screenID)" @goto="goto"></component>
+      <component :is="currentView(screenID)" @goto="goto" @toggle_backbutton="toggle_backbutton"></component>
     </Transition>
   </div>
 </template>
@@ -54,22 +78,15 @@ const currentView = (id: number): any =>
   overflow: hidden;
 }
 
-header
+@keyframes header_animation
 {
-  font-size: .7rem;
-  transition: transform .5s ease, opacity .5s linear;
-  opacity: 1;
-}
-
-header.hide
-{
-  transform: translateY(-100%);
-  opacity: 0;
+  from { opacity: 1; transform: translateY(0%); }
+  to { opacity: 0; transform: translateY(-100%); }
 }
 
 .v-enter-active,
 .v-leave-active {
-  transition: transform .5s ease, opacity .5s linear;
+  transition: transform .5s ease, opacity .5s ease;
   will-change: transform, opacity;
 }
 

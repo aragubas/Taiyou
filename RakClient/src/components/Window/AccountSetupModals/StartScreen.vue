@@ -11,8 +11,8 @@ const emit = defineEmits(["goto"])
     </header>
 
     <ul>
-      <li><a class="button" @click="emit('goto', 1)">Login</a></li>
-      <li><a class="button" @click="emit('goto', 0)">Register</a></li>
+      <li><button class="button" @click="emit('goto', 1)" tabindex="0">Login</button></li>
+      <li><button class="button" @click="emit('goto', 0)" tabindex="0">Register</button></li>
     </ul>
   </div>
 </template>
@@ -31,7 +31,6 @@ const emit = defineEmits(["goto"])
   justify-content: space-around;
   padding: 1rem;
   gap: 1.5rem;
-
 }
 
 header

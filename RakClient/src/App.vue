@@ -99,10 +99,10 @@ input[type="password"]
   border-radius: 4px;
   user-select: none;
 }
-
+ 
 .button:active
 {
-  background: rgb(80, 82, 88);
+  background: rgb(90, 92, 98);
 }
 
 .button:hover
