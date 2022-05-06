@@ -1,4 +1,4 @@
-import { ref } from "@vue/runtime-core";
+import { Ref, ref } from "@vue/runtime-core";
 
 class StoredCredentals
 {
@@ -13,10 +13,11 @@ class StoredCredentals
   }
 }
 
+export let credentials: Ref<StoredCredentals> | null = null;
 
 export function SaveCredentials(session_token: string, username: string, userID: string)
 {
-  credentials.value = new StoredCredentals(username, userID, session_token);
+  credentials = ref(new StoredCredentals(username, userID, session_token));
   localStorage.setItem("credentials", JSON.stringify(credentials.value));
 }
 
@@ -25,6 +26,6 @@ export function LoadCredentials()
   let storedCredentials = localStorage.getItem("credentials");
   if (storedCredentials)
   {
-    credentials.value = JSON.parse(storedCredentials);
+    credentials = ref(JSON.parse(storedCredentials));
   }
 }
