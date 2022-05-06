@@ -8,7 +8,7 @@ let password = ref("")
 let loading = ref(false)
 let errorMessage = ref("");
 
-const emit = defineEmits(["register"])
+const emit = defineEmits(["goto"])
 
 interface ErrorResponse
 {
@@ -75,7 +75,6 @@ function formPayload()
   <div class="wrapper" :class="[loading ? 'loading' : '']">
     <span class="loading-bar" :class="[loading ? 'loading' : '']"></span>
     
-    <button @click="emit('register')">Register</button>
     <form class="userpanel-form" :class="[loading ? 'loading' : '', errorMessage != '' ? 'error' : '']" v-on:submit.prevent="formPayload">
       <header>
         <h1>Login</h1>
@@ -124,8 +123,14 @@ label
   font-size: .8rem;
 }
 
-input[type="submit"],
-button
+.back-button
+{
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+input[type="submit"]
 {
   margin-top: 1rem;
   border: none;
@@ -133,11 +138,6 @@ button
   padding: .3rem;
   color: white;
   border-radius: 4px;
-}
-
-button
-{
-  margin-top: 0;
 }
 
 input[type="submit"]:active

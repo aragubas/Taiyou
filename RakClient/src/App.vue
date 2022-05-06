@@ -88,4 +88,28 @@ input[type="password"]
   outline: none;
   box-shadow: 0px 0px 2px rgb(230, 232, 238);
 }
+
+.button
+{
+  display: inline-block;
+  border: none;
+  background: rgb(60, 62, 68);
+  padding: .3rem;
+  color: white;
+  border-radius: 4px;
+  user-select: none;
+}
+
+.button:active
+{
+  background: rgb(80, 82, 88);
+}
+
+.button:hover
+{
+  background: rgb(70, 72, 78);
+  cursor: pointer;
+}
+
+
 </style>

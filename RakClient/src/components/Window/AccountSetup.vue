@@ -14,10 +14,9 @@ onMounted(() => {
   getInstance(props.windowID).resizable = false;
 });
 
-function ceira()
+function goto(screenid: number)
 {
-  console.log("mudar ceira")
-  screenID.value = 1;
+  screenID.value = screenid;
 }
 
 const currentView = (id: number): any =>
@@ -39,8 +38,12 @@ const currentView = (id: number): any =>
 
 <template>
   <div class="wrapper">
+    <header :class="screenID == 0 ? 'hide' : ''">
+      <a class="button" @click="screenID = 0">Back</a>
+    </header>
+
     <Transition>
-      <component :is="currentView(screenID)" @register="ceira"></component>
+      <component :is="currentView(screenID)" @goto="goto"></component>
     </Transition>
   </div>
 </template>
@@ -51,6 +54,18 @@ const currentView = (id: number): any =>
   overflow: hidden;
 }
 
+header
+{
+  font-size: .7rem;
+  transition: transform .5s ease, opacity .5s linear;
+  opacity: 1;
+}
+
+header.hide
+{
+  transform: translateY(-100%);
+  opacity: 0;
+}
 
 .v-enter-active,
 .v-leave-active {
