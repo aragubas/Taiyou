@@ -2,18 +2,21 @@ import { ref } from "@vue/runtime-core";
 
 class StoredCredentals
 {
+  session_token: string;
   username: string;
+  userID: string;
 
-  constructor(username: string) {
+  constructor(username: string, userID: string, session_token: string) {
     this.username = username;
+    this.userID = userID;
+    this.session_token = session_token;
   }
 }
 
-export let credentials = ref(new StoredCredentals("silas"));
 
-export function SaveCredentials(username: string)
+export function SaveCredentials(session_token: string, username: string, userID: string)
 {
-  credentials.value = new StoredCredentals(username);
+  credentials.value = new StoredCredentals(username, userID, session_token);
   localStorage.setItem("credentials", JSON.stringify(credentials.value));
 }
 

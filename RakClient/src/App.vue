@@ -12,7 +12,6 @@ import { LoadCredentials } from "./Credentials";
 if (localStorage.getItem("credentials") == null)
 {
   createWindow({componentPath: "TaiyouAccount.vue", width: 400, height: 300, closeable: false});
-  createWindow({componentPath: "TaiyouAccount.vue", width: 400, height: 300, closeable: false});
 }else
 {
   LoadCredentials();
@@ -70,13 +69,18 @@ a {
   color: inherit;
 }
 
-input[type="text"]
+input[type="text"], input[type="email"], input[type="password"]
 {
   background: rgb(60, 62, 68);
   border: none;
   padding: .2rem;
   border-radius: 4px;
   color: white;
+}
+
+input[type="password"]
+{
+  font-family: monospace;
 }
 
 *:focus

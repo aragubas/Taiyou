@@ -1,5 +1,9 @@
 import { Socket, Server } from 'socket.io';
 import { v4 } from "uuid";
+import express from 'express';
+import Cors from './Middleware/Express/Cors';
+import { PrismaClient } from '@prisma/client';
+import UserRouter from './ExpressRoutes/User';
 
 class User
 {
@@ -10,8 +14,16 @@ class User
   }
 }
 
-const server = new Server({ cors: { origin: "*", methods: ["GET", "POST"] } });
+const expressApp = express();
+const socketApp = new Server({ cors: { origin: "*", methods: ["GET", "POST"] } });
 const clients = new Map<string, User>();
+const prismaClient = new PrismaClient();
+
+expressApp.use(express.json());
+expressApp.use(Cors);
+
+// User Router
+expressApp.use("/user", UserRouter);
 
 class Message
 {
@@ -33,7 +45,7 @@ interface ReceivedMessage
   content: string;
 }
 
-server.on("connection", async (client: Socket) => {
+socketApp.on("connection", async (client: Socket) => {
   client.on("message", (data: any) =>{
     const message: ReceivedMessage = JSON.parse(data);
     if (clients.has(message.token))
@@ -45,5 +57,17 @@ server.on("connection", async (client: Socket) => {
   
 });
 
-server.listen(3313);
-console.log("Server started on port 3313");
+async function bootstrap(socketPort: number, expressPort: number)
+{
+  await prismaClient.$connect();
+  console.log("Prisma connected to DB");
+  
+  socketApp.listen(socketPort);
+  console.log(`Websocket Server started on port ${socketPort}`);
+
+  expressApp.listen(3314);
+  console.log(`Express started on port ${expressPort}`);
+    
+}
+ 
+bootstrap(3313, 3314);
