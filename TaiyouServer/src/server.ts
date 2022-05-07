@@ -27,30 +27,10 @@ expressApp.use(Cors);
 // User Router
 expressApp.use("/user", UserRouter);
 
-class Message
-{
-  username: string;
-  content: string;
-  id: string;
-
-  constructor(username: string, content: string, id: string)
-  {
-    this.username = username;
-    this.content = content;
-    this.id = id;
-  }
-}
-
-interface ReceivedMessage
-{
-  token: string;
-  content: string;
-}
 
 class ConnectedClient
 {
   session_token: string | null = null;
-  userID: string | null = null;
   socket: Socket
 
   constructor(socket: Socket)
@@ -87,13 +67,12 @@ socketApp.on("connection", async (client: Socket) => {
     
     if (authRequest == null || !authRequest.session_token == null) { client.emit("credential_error"); client.disconnect(); return; }
     
-    // Get UserID from token
+    // Get UserID from token and check if session token is still valid
     const userID = await WsUserIDFromSessionToken(authRequest.session_token);
     if (userID == null) { client.emit("credential_error"); client.disconnect(); return; }
     
     clients.set(client.id, new ConnectedClient(client));
     clients.get(client.id)!.session_token = authRequest.session_token
-    clients.get(client.id)!.userID = userID;
 
     client.emit("auth_success")
     
@@ -104,24 +83,43 @@ socketApp.on("connection", async (client: Socket) => {
     const authData = data as WsClientAuthenticationData;
     
     const session = clients.get(client.id)!;
-    if (authData.session_token != clients.get(client.id)?.session_token || authData.session_token == null || session == null) { client.emit("credential_error"); client.disconnect(); return; }
+    if (authData.session_token != clients.get(client.id)?.session_token || authData.session_token == null || session == null || session.session_token == null) 
+    { 
+      client.emit("credential_error"); 
+      client.disconnect(); 
+      return; 
+    }
     
-    const user = await prisma.user.findUnique({where: { id: session.userID! }});
+    // Get UserID from token and check if session token is still valid
+    const userID = await WsUserIDFromSessionToken(session.session_token);
+    if (userID == null) { client.emit("credential_error"); client.disconnect(); return; }
+    
+    const user = await prisma.user.findUnique({where: { id: userID }});
     
     if (user == null) { client.emit("credential_error"); client.disconnect(); return; }
 
     const friends = await GetFriends(user.username);
 
     client.emit("update_friend_list", friends)
-  })
+  })  
 
+  // Returns updated group list
   client.on("get_groups", async (data: any) => {
     const authData = data as WsClientAuthenticationData;
-    
-    const session = clients.get(client.id)!;
-    if (authData.session_token != clients.get(client.id)?.session_token || authData.session_token == null || session == null) { client.emit("credential_error"); client.disconnect(); return; }
 
-    const groups = await prisma.group.findMany({ where: { users: { some: { id: clients.get(client.id)!.userID! } } } })
+    const session = clients.get(client.id)!;
+    if (authData.session_token != clients.get(client.id)?.session_token || authData.session_token == null || session == null || session.session_token == null) 
+    { 
+      client.emit("credential_error"); 
+      client.disconnect(); 
+      return; 
+    }
+    
+    // Get UserID from token and check if session token is still valid
+    const userID = await WsUserIDFromSessionToken(session.session_token);
+    if (userID == null) { client.emit("credential_error"); client.disconnect(); return; }
+
+    const groups = await prisma.group.findMany({ where: { users: { some: { id: userID } } } })
     
     const newGroupResponse = new GetGroupsResponse(new Array<BasicGroupInfo>());
 

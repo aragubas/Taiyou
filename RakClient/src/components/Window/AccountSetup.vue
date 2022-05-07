@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { computed, onMounted,  ref,  shallowRef, watch } from "@vue/runtime-dom";
+import { computed, onMounted,  onUnmounted,  ref,  shallowRef, watch } from "@vue/runtime-dom";
 import { GlobalMenuItem } from "../../global-menu";
 import { createWindow, destroyWindow, getInstance } from "../../window-manager";
 import Login from "./AccountSetupModals/Login.vue";
 import Register from "./AccountSetupModals/Register.vue";
 import StartScreen from "./AccountSetupModals/StartScreen.vue";
 import Connect from "./AccountSetupModals/Connect.vue";
+import { si } from "../../API/ws-api";
 const props = defineProps<{ windowID: string }>();
 
 let screenID = ref(0);
 let backbutton_hidden = ref(true);
+let alreadyCreated = false;
 
 watch(screenID, () =>{
   if (screenID.value == 0) 
@@ -34,6 +36,13 @@ watch(backbutton_hidden, (newValue: boolean) =>{
 })
 
 onMounted(() => {
+  if (si(undefined)) 
+  { 
+    alreadyCreated = true; 
+  }
+
+  si(false);
+  
   getInstance(props.windowID).title = "Account Setup & Authentication";
   getInstance(props.windowID).resizable = false;
   getInstance(props.windowID).width = 300;
@@ -42,6 +51,11 @@ onMounted(() => {
   if (localStorage.getItem("credentials") != null)
   {
     screenID.value = 3;
+  }
+
+  if (alreadyCreated)
+  {
+    screenID.value = 1;
   }
 });
 
@@ -57,8 +71,13 @@ function toggle_backbutton()
 
 function account_setup_complete()
 {
+  si(true);
+  
   destroyWindow(props.windowID);
-  createWindow({componentPath: "ContactList.vue", width: 200, height: 300});
+  if (!alreadyCreated)
+  {
+    createWindow({componentPath: "ContactList.vue", width: 200, height: 300});
+  }
 }
 
 const currentView = (id: number): any =>

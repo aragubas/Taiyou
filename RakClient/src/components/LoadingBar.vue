@@ -1,11 +1,11 @@
 <script setup lang="ts">
 
-const props = defineProps<{ active: boolean }>();
+const props = defineProps({ active: { type: Boolean, required: true }, always_visible: { type: Boolean, required: false } });
 
 </script>
 
 <template>
-  <span class="loading-bar" :class="[active ? 'active' : '']"></span>
+  <span class="loading-bar" :class="[active ? 'active' : '', always_visible == true ? 'force-visible' : '']"></span>
 </template>
 
 <style scoped>
@@ -29,6 +29,13 @@ const props = defineProps<{ active: boolean }>();
   transform-origin: top center;
   transition: opacity .3s linear, transform .2s cubic-bezier(0.21, 0.53, 0.74, 0.51), box-shadow .2s linear;
   overflow: hidden;
+}
+
+.force-visible
+{
+  position: relative;
+  opacity: 1;
+  transform: scaleY(100%);
 }
 
 .loading-bar.active

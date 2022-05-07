@@ -2,12 +2,15 @@
 import { createWindow, getInstance } from "../../window-manager";
 import { defineProps, onMounted, onUnmounted, ref, Ref } from "@vue/runtime-core";
 import { v4 } from "uuid";
-import { SessionToken, socket } from "../../API/ws-api";
+import { SessionToken, socket, Connected } from "../../API/ws-api";
 import LoadingBar from "../LoadingBar.vue";
+import Disconnected from "../Overlays/Disconnected.vue";
 const props = defineProps<{ windowID: string }>();
 
 let UpdateUsersTimer: number;
 let loading = ref(false);
+let requested = false;
+let requestedLoadingBar: number;
 
 interface UpdateContactResponse
 {
@@ -19,13 +22,21 @@ async function UpdateContactList(data: any)
 {
   const response = data as UpdateContactResponse
 
-  contact_examples.value.splice(0, contact_examples.value.length);
+  const newContactList = Array<Contact>();
 
   response.usernames.forEach(user => {
-    contact_examples.value.push(new Contact(user, "Unknown"))  
+    newContactList.push(new Contact(user, "Unknown"))  
   });
 
+  if (JSON.stringify(newContactList) != JSON.stringify(contacts.value)) {
+    contacts.value = newContactList;
+  }
+
   loading.value = false;
+
+  clearTimeout(requestedLoadingBar);
+
+  requested = false;
 }
 
 class Contact
@@ -42,7 +53,7 @@ class Contact
   }
 }
 
-const contact_examples: Ref<Array<Contact>> = ref(new Array<Contact>());
+const contacts: Ref<Array<Contact>> = ref(new Array<Contact>());
 
 onMounted(() => {
   getInstance(props.windowID).title = "Contacts";
@@ -55,23 +66,34 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  console.log("unmount")
   clearInterval(UpdateUsersTimer);
   socket.off("update_friend_list", UpdateContactList)
 })
 
 function RequestContactList()
 {
+  if (Connected.value == false) { requested = false; return; }
+  if (requested == true) { return; }
+
   socket.emit("get_friend_list", SessionToken);
+
+  requestedLoadingBar = setTimeout(() => { if(!requested) { return; } loading.value = true; }, 500, null);
+
   loading.value = true;
+  requested = true;
 }
 
 </script>
 
 <template>
   <div class="wrapper">
-    <LoadingBar :active="loading"></LoadingBar>
-    <ol>
-      <li v-for="contact in contact_examples" :key="contact.id" class="contact">
+    <LoadingBar :active="loading" :always_visible="true" v-if="Connected"></LoadingBar>
+
+    <Disconnected v-if="!Connected"></Disconnected>
+
+    <ol v-if="Connected">
+      <li v-for="contact in contacts" :key="contact.id" class="contact">
         <span class="profilepicture"></span>
 
         <div class="username-box">
@@ -86,14 +108,19 @@ function RequestContactList()
 <style scoped>
 .wrapper
 {
-  padding: .5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
+
 
 ol
 {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  overflow-y: auto;
+  padding: .5rem;
 }
 
 i

@@ -59,10 +59,10 @@ interface WindowFactoryProperties {
   onRestore?: () => void;
 }
 
-let Sinas: Ref<Array<WindowInstance>> = ref(Array<WindowInstance>());
+let WindowInstances: Ref<Array<WindowInstance>> = ref(Array<WindowInstance>());
 
 export function getInstance(id: string): WindowInstance {
-  return Sinas.value.find((window) => window.id === id)!;
+  return WindowInstances.value.find((window) => window.id === id)!;
 }
 
 export function createWindow(properties: WindowFactoryProperties): string {
@@ -108,7 +108,7 @@ export function createWindow(properties: WindowFactoryProperties): string {
   // Create global menu instance
   newWindow.globalMenu = new GlobalMenuInstance(newWindowId);
 
-  Sinas.value.push(newWindow);
+  WindowInstances.value.push(newWindow);
 
   // Focus newly created window
   focusWindow(newWindowId);
@@ -117,19 +117,26 @@ export function createWindow(properties: WindowFactoryProperties): string {
 }
 
 export function destroyWindow(id: string) {
-  let windowToDestroy = Sinas.value.find((window) => window.id === id);
+  let windowToDestroy = WindowInstances.value.find((window) => window.id === id);
   if (windowToDestroy) {
     windowToDestroy.onClose();
-    Sinas.value.splice(Sinas.value.indexOf(windowToDestroy), 1);
+    WindowInstances.value.splice(WindowInstances.value.indexOf(windowToDestroy), 1);
   }
+}
+
+export function CloseAllWindows()
+{
+  WindowInstances.value.forEach((window) => {
+    destroyWindow(window.id)
+  })
 }
 
 export function focusWindow(id: string, unminimize: boolean = false) {
   if (id == "") { focusedWindow.value = ""; }
   if (id === focusedWindow.value) { return; }
   // Move item with id to start of array
-  const index = Sinas.value.findIndex((item) => item.id === id);
-  const instance = Sinas.value.find((item) => item.id === id);
+  const index = WindowInstances.value.findIndex((item) => item.id === id);
+  const instance = WindowInstances.value.find((item) => item.id === id);
 
   if (!instance) {
     console.error("Cannot focus in inexistent window");
@@ -139,9 +146,9 @@ export function focusWindow(id: string, unminimize: boolean = false) {
     instance.minimized = false;
   }
 
-  Sinas.value.splice(index, 1);
-  Sinas.value.push(instance);
+  WindowInstances.value.splice(index, 1);
+  WindowInstances.value.push(instance);
   focusedWindow.value = id;
 }
 
-export default Sinas;
+export default WindowInstances;

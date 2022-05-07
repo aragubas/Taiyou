@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TaiyouWindow from "./components/TaiyouWindow.vue";
 import GlobalMenu from "./components/GlobalMenu.vue";
-import Sinas, { createWindow } from "./window-manager";
+import WindowInstances, { createWindow } from "./window-manager";
 import ActionBar from "./components/ActionBar.vue";
 import { LoadCredentials } from "./Credentials";
 
@@ -16,7 +16,7 @@ createWindow({componentPath: "AccountSetup.vue", width: 440, height: 340, closea
 <template>
   <GlobalMenu></GlobalMenu>
   <main>
-    <TaiyouWindow v-for="window in Sinas" :key="window.id" :windowID="window.id">
+    <TaiyouWindow v-for="window in WindowInstances" :key="window.id" :windowID="window.id">
     </TaiyouWindow>
   </main>
   <ActionBar></ActionBar>

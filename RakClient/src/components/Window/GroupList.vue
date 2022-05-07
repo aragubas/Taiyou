@@ -1,14 +1,17 @@
 
 <script setup lang="ts">
-import { onMounted, ref } from "@vue/runtime-dom";
+import { onMounted, onUnmounted, ref, watch } from "@vue/runtime-dom";
 import { v4 } from "uuid";
-import { SessionToken, socket } from "../../API/ws-api";
-import { getInstance } from "../../window-manager";
+import { SessionToken, socket, Connected } from "../../API/ws-api";
+import { destroyWindow, getInstance } from "../../window-manager";
 import LoadingBar from "../LoadingBar.vue";
+import Disconnected from "../Overlays/Disconnected.vue";
 const props = defineProps<{ windowID: string }>();
 
 let UpdateGroupsTimer: number;
 let loading = ref(false);
+let requested = false;
+let requestedLoadingBar: number;
 
 socket.on("update_groups", UpdateGroupList);
 
@@ -35,24 +38,33 @@ async function UpdateGroupList(data: any)
   })
 
   loading.value = false;
+  
+  clearTimeout(requestedLoadingBar);
+
+  requested = false;  
 }
 
 onMounted(() => {
   getInstance(props.windowID).title = "Groups";
   getInstance(props.windowID).closeable = false;
 
-  groupsList.value.push(new Group(v4(), "SinasTeste"))
-  groupsList.value.push(new Group(v4(), "TropineteAzul"))
-
-  UpdateGroupsTimer = setInterval(RequestGroupList, 2000, null);
+  UpdateGroupsTimer = setInterval(RequestGroupList, 2500, null);
 
   RequestGroupList();
 })
 
 function RequestGroupList()
 {
-  loading.value = true;
+  if (Connected.value == false) { requested = false; return; }
+  if (requested == true) { return; }
+  
   socket.emit("get_groups", SessionToken);
+
+  // Wait 500ms after showing the loading bar
+  requestedLoadingBar = setTimeout(() => { if(!requested) { return; } loading.value = true; }, 500, null);
+  
+  requested = true;
+
 }
 
 class Group
@@ -73,9 +85,11 @@ const groupsList = ref(new Array<Group>());
 
 <template>
   <div class="wrapper">
-    <LoadingBar :active="loading"></LoadingBar>
+    <LoadingBar :active="loading" :always_visible="true" v-if="Connected"></LoadingBar>
 
-    <ul>
+    <Disconnected v-if="!Connected"></Disconnected>
+
+    <ul v-if="Connected">
       <li v-for="group in groupsList" :key="group.id" class="group">
         <span class="group-icon"></span>
         
@@ -83,7 +97,6 @@ const groupsList = ref(new Array<Group>());
           <p>{{group.name}}</p>
           <i>Group</i>
         </div>
-
       </li>
     </ul>
   </div>
@@ -93,7 +106,9 @@ const groupsList = ref(new Array<Group>());
 <style scoped>
 .wrapper
 {
-  padding: .5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 ul
@@ -101,6 +116,8 @@ ul
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  overflow-y: auto;
+  padding: .5rem;
 }
 
 .group span.group-icon

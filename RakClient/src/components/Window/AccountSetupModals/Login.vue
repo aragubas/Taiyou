@@ -38,7 +38,9 @@ async function login()
     // Successfully logged in
     if (response.success)
     {
-      emit("goto", 3)
+      
+      setTimeout(() => { emit("goto", 3) }, 500)
+      return;
 
     }else
     {

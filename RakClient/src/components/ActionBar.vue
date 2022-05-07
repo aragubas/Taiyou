@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { computed } from "@vue/reactivity";
 import { ref } from "vue";
+import { Connected } from "../API/ws-api";
 import { credentials } from "../Credentials";
 import { NotificationList } from "../notifications-manager";
-import Sinas, { focusWindow, getInstance } from "../window-manager";
+import WindowInstances, { focusWindow, getInstance } from "../window-manager";
 
 let notificationsVisible = ref(false);
 let autoHide = ref(false);
@@ -32,7 +34,7 @@ function toggleNotifications() {
   <div class="wrapper">
     <div class="container" :class="autoHide ? 'autohide' : ''">
       <ul class="window-list">
-        <li v-for="window in Sinas" :key="window.id">
+        <li v-for="window in WindowInstances" :key="window.id">
           <a class="button" :minimized="window.minimized" @click="_focusWindow(window.id)">
             {{ window.title }}
           </a>
@@ -41,9 +43,9 @@ function toggleNotifications() {
 
       <div class="actions-panel">
         <div class="user-info">
-          <span v-if="credentials.logged_in" class="user-img"></span>
-          <p v-if="credentials.logged_in">@{{credentials?.username}}</p>
-          <p v-if="!credentials.logged_in">Not authenticated</p>
+          <span v-if="Connected" class="user-img"></span>
+          <p v-if="Connected">@{{credentials?.username}}</p>
+          <p v-if="!Connected">Disconnected</p>
         </div>
 
         <ul class="actions-controls">
@@ -199,7 +201,7 @@ function toggleNotifications() {
 
 .window-list {
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   gap: 0.3rem;
   overflow-y: auto;
   padding-bottom: 1rem;
