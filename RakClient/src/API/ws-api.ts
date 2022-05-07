@@ -1,9 +1,9 @@
 import { ref } from "@vue/runtime-dom";
-import { Manager } from "socket.io-client";
+import { Manager, Socket } from "socket.io-client";
 import { credentials, LoadCredentials } from "../Credentials";
 
 export const manager = new Manager("http://localhost:3313");
-export const socket = manager.socket("/");
+export const socket: Socket = manager.socket("/").disconnect();
 
 export class SessionTokenStore
 {
@@ -23,13 +23,17 @@ export function Connect()
   LoadCredentials();
   SessionToken = new SessionTokenStore(credentials!.value.session_token);
 
-  socket.emit("authenticate", null)
+  console.log(credentials.value.session_token)
 
+  socket.connect();
+
+  socket.emit("authenticate", SessionToken)
 }
 
 function handleCredentialsError()
 {
   Connected.value = false
+  credentials.value.logged_in = false;
   console.log("Credentials error")
 
 }
@@ -37,9 +41,7 @@ function handleCredentialsError()
 function handleAuthSuccess()
 {
   Connected.value = true
-  console.log("Authenticated")
-
-
+  credentials.value.logged_in = true;
 }
 
 socket.on("credential_error", handleCredentialsError);

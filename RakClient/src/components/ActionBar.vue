@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { credentials } from "../Credentials";
 import { NotificationList } from "../notifications-manager";
 import Sinas, { focusWindow, getInstance } from "../window-manager";
 
 let notificationsVisible = ref(false);
-let autoHide = ref(true);
+let autoHide = ref(false);
 
 function _focusWindow(id: string) {
   getInstance(id).toggleMinimize();
@@ -28,55 +29,63 @@ function toggleNotifications() {
 </script>
 
 <template>
-  <div class="container" :class="autoHide ? 'autohide' : ''">
-    <ul class="window-list">
-      <li v-for="window in Sinas" :key="window.id">
-        <a class="button" :minimized="window.minimized" @click="_focusWindow(window.id)">
-          {{ window.title }}
-        </a>
-      </li>
-    </ul>
-
-    <div class="actions-panel">
-      <span class="user-img"></span>
-
-      <ul class="actions-controls">
-        <li>
-          <img
-            class="button-icon"
-            :src="autoHide ? 'hide.svg' : 'keep.svg'"
-            @click="toggleAutohide()"
-          />
-        </li>
-
-        <li>
-          <img class="button-icon" src="gear.svg" />
-        </li>
-
-        <li>
-          <img
-            class="button-icon"
-            src="bell.svg"
-            @click="toggleNotifications()"
-          />
+  <div class="wrapper">
+    <div class="container" :class="autoHide ? 'autohide' : ''">
+      <ul class="window-list">
+        <li v-for="window in Sinas" :key="window.id">
+          <a class="button" :minimized="window.minimized" @click="_focusWindow(window.id)">
+            {{ window.title }}
+          </a>
         </li>
       </ul>
-    </div>
-  </div>
 
-  <div class="notifications-container" :class="notificationsVisible ? 'notifications-show' : ''">
-    <header>
-      <div class="notifications-header">
-        <p>Notifications</p>
+      <div class="actions-panel">
+        <div class="user-info">
+          <span v-if="credentials.logged_in" class="user-img"></span>
+          <p v-if="credentials.logged_in">@{{credentials?.username}}</p>
+          <p v-if="!credentials.logged_in">Not authenticated</p>
+        </div>
+
+        <ul class="actions-controls">
+          <li>
+            <img
+              class="button-icon"
+              :src="autoHide ? 'hide.svg' : 'keep.svg'"
+              @click="toggleAutohide()"
+            />
+          </li>
+
+          <li>
+            <img class="button-icon" src="gear.svg" />
+          </li>
+
+          <li>
+            <img
+              class="button-icon"
+              src="bell.svg"
+              @click="toggleNotifications()"
+            />
+          </li>
+        </ul>
+
+
       </div>
-    </header>
+    </div>
 
-    <ol class="notifications">
-      <li v-for="notification in NotificationList" :key="notification.id" class="notification">
-        <h1>{{ notification.title }}</h1>
-        <p>{{ notification.message }}</p>
-      </li>
-    </ol>
+    <div class="notifications-container" :class="notificationsVisible ? 'notifications-show' : ''">
+      <header>
+        <div class="notifications-header">
+          <p>Notifications</p>
+        </div>
+      </header>
+
+      <ol class="notifications">
+        <li v-for="notification in NotificationList" :key="notification.id" class="notification">
+          <h1>{{ notification.title }}</h1>
+          <p>{{ notification.message }}</p>
+        </li>
+      </ol>
+    </div>
   </div>
 
 </template>
@@ -208,14 +217,29 @@ function toggleNotifications() {
   border-radius: 4px;
 }
 
+.actions-panel p {
+  grid-column: 1;
+
+}
+
 .actions-panel {
   display: flex;
+  flex-direction: column;
   justify-self: center;
 
   gap: 0.5rem;
 }
 
+.user-info
+{
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+}
+
 .actions-controls {
+  grid-column: 2;
+  grid-row: 2;
   display: flex;
   align-items: center;
   gap: 0.3rem;

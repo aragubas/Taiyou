@@ -45,6 +45,7 @@ onMounted(() => {
   getInstance(props.windowID).closeable = false;
   
   UpdateUsersTimer = setInterval(RequestContactList, 2000, null);
+  RequestContactList();
 })
 
 onUnmounted(() => {

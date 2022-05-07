@@ -83,17 +83,18 @@ socketApp.on("connection", async (client: Socket) => {
   client.on("authenticate", async (data: any) =>{
     const authRequest = data as WsClientAuthenticationData;
     
-    if (authRequest == null || !authRequest.session_token == null) { client.emit("credential_error"); return; }
+    if (authRequest == null || !authRequest.session_token == null) { client.emit("credential_error"); client.disconnect(); return; }
     
     // Get UserID from token
     const userID = await WsUserIDFromSessionToken(authRequest.session_token);
-    if (userID == null) { client.emit("credential_error"); return; }
+    if (userID == null) { client.emit("credential_error"); client.disconnect(); return; }
     
     clients.set(client.id, new ConnectedClient(client));
     clients.get(client.id)!.session_token = authRequest.session_token
     clients.get(client.id)!.userID = userID;
 
     client.emit("auth_success")
+    
   })
 
   // Returns updated friend list
@@ -101,11 +102,11 @@ socketApp.on("connection", async (client: Socket) => {
     const authData = data as WsClientAuthenticationData;
     
     const session = clients.get(client.id)!;
-    if (authData.session_token != clients.get(client.id)?.session_token || authData.session_token == null || session == null) { client.emit("credential_error"); return; }
+    if (authData.session_token != clients.get(client.id)?.session_token || authData.session_token == null || session == null) { client.emit("credential_error"); client.disconnect(); return; }
     
     const user = await prisma.user.findUnique({where: { id: session.userID! }});
     
-    if (user == null) { client.emit("credential_error"); return; }
+    if (user == null) { client.emit("credential_error"); client.disconnect(); return; }
 
     const friends = await GetFriends(user.username);
 

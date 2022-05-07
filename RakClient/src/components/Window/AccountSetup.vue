@@ -87,7 +87,7 @@ const currentView = (id: number): any =>
 <template>
   <div class="wrapper">
     <Transition>
-      <component :is="currentView(screenID)" @goto="goto" @toggle_backbutton="toggle_backbutton" @setup-complete="account_setup_complete"></component>
+      <component :is="currentView(screenID)" @goto="goto" @toggle_backbutton="toggle_backbutton" @setup_complete="account_setup_complete"></component>
     </Transition>
   </div>
 </template>
