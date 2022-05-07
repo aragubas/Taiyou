@@ -2,19 +2,23 @@ import { PrismaClient } from '@prisma/client';
 import { Router } from 'express';
 import { IncomingHttpHeaders } from 'http';
 import { v4 } from 'uuid';
+import GetFriends from '../HybridRoutes/User';
 import GenericResponse from '../Models/GenericResponse';
+import GetFriendsResponse from '../Models/HybridRoute/GetFriendsResponse';
 import BasicAuthHeaderDecode from '../Utils/BasicAuthHeaderDecode';
 
 let router = Router();
 const prisma = new PrismaClient();
 export default router;
-
+ 
 interface CreateUserRequest
 {
   username: string;
   email: string;
   password: string;
 }
+
+
 
 class GetUserResponse extends GenericResponse
 {
@@ -72,7 +76,7 @@ async function getUserToken(userID: string) : Promise<string>
   {
     // Create token
     const token = `${v4()}.${new Date().getTime()}`;
-
+    
     const newStoredToken = await prisma.sessionToken.create({
       data: {
         token: token,
@@ -118,4 +122,38 @@ router.get("/", async (request, response) =>{
   }
 
   response.send(new GetUserResponse(await getUserToken(user.id), user.id, user.username));
+})
+
+// Get friends request
+router.get("/friends", async (request, response) =>{
+  // Check if authorization header is present
+  if (request.headers.authorization == undefined)
+  {
+    response.status(401).send(new GenericResponse("invalid_credentials"));
+    return;
+  }
+  const getUserRequest = BasicAuthHeaderDecode(request.headers.authorization);
+  
+  // Get user by email
+  const user = await prisma.user.findUnique({
+    where: {
+      email: getUserRequest.username,
+    }
+  })
+
+  // Check if user exists
+  if (user == null)
+  {
+    response.status(401).send(new GenericResponse("invalid_credentials"));
+    return;
+  }
+
+  // Check if password is valid
+  if (user.password != getUserRequest.password)
+  {
+    response.status(401).send(new GenericResponse("invalid_credentials"));
+    return;
+  }
+
+  response.send(await GetFriends(user.username));
 })

@@ -58,7 +58,7 @@ function contextMenuClose()
       <ul v-if="!getFocusedWindow()?.minimized">
         <li
           v-for="item in getFocusedWindow()?.globalMenu?.items" :key="item.id">
-          <a @click="menuItemClick(item)">{{ item.text }}</a>
+          <button @click="menuItemClick(item)">{{ item.text }}</button>
         </li>
       </ul>
     </div>
@@ -83,11 +83,14 @@ function contextMenuClose()
   box-shadow: 0px 0px 1px black;
 }
 
-a {
+button {
   user-select: none;
+  background: none;
+  border: none;
+  color: inherit;
 }
 
-a:hover {
+button:hover {
   color: white;
 }
 

@@ -9,14 +9,7 @@ import { LoadCredentials } from "./Credentials";
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
 
 // Create account window if no credentials are found
-if (localStorage.getItem("credentials") == null)
-{
-  createWindow({componentPath: "AccountSetup.vue", width: 440, height: 340, closeable: false});
-}else
-{
-  LoadCredentials();
-  createWindow({componentPath: "ContactList.vue", width: 800, height: 600});
-}
+createWindow({componentPath: "AccountSetup.vue", width: 440, height: 340, closeable: false});
 
 </script>
 

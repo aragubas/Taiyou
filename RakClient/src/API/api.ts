@@ -68,8 +68,8 @@ export async function Login(email: string, password: string): Promise<OperationR
   
     if (request.status == 401)
     {
-      const response = request.data as ErrorResponse;
-      
+      const response = JSON.parse(request.data) as ErrorResponse;
+
       switch (response.message)
       {
         case "invalid_credentials":

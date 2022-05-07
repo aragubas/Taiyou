@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from "vue";
+import { computed, defineAsyncComponent, defineComponent, onMounted, onUnmounted, ref } from "vue";
 import {
   focusWindow,
   getInstance,

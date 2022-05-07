@@ -6,6 +6,7 @@ import { GlobalMenuItem } from "../../global-menu";
 import { getInstance } from "../../window-manager";
 import { Manager } from "socket.io-client";
 import { credentials } from "../../Credentials"
+import { manager } from "../../API/ws-api";
 
 function fileMenu() {
   alert("File Menu!");
@@ -35,7 +36,6 @@ interface Message
 }
 
 const messages = ref(Array<Message>());
-const manager = new Manager("http://localhost:3313");
 const socket = manager.socket("/");
 let message = ref("");
 

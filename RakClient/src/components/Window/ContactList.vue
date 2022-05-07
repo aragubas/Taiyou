@@ -1,8 +1,28 @@
 <script setup lang="ts">
 import { getInstance } from "../../window-manager";
-import { defineProps, onMounted, ref, Ref } from "@vue/runtime-core";
+import { defineProps, onMounted, onUnmounted, ref, Ref } from "@vue/runtime-core";
 import { v4 } from "uuid";
+import { SessionToken, socket } from "../../API/ws-api";
 const props = defineProps<{ windowID: string }>();
+
+let UpdateUsersTimer: number;
+
+interface UpdateContactResponse
+{
+  usernames: Array<string>
+}
+
+socket.on("update_friend_list", UpdateContactList)
+function UpdateContactList(data: any)
+{
+  const response = data as UpdateContactResponse
+
+  contact_examples.value.splice(0, contact_examples.value.length);
+
+  response.usernames.forEach(user => {
+    contact_examples.value.push(new Contact(user, "Unknown"))  
+  });
+}
 
 class Contact
 {
@@ -18,12 +38,24 @@ class Contact
   }
 }
 
-const contact_examples: Ref<Array<Contact>> = ref(new Array<Contact>( new Contact("sinasssssssssssssssssssssssssssssssssssss", "Enceirando"), new Contact("ceira", "Online") ));
+const contact_examples: Ref<Array<Contact>> = ref(new Array<Contact>());
 
 onMounted(() => {
   getInstance(props.windowID).title = "Contacts";
   getInstance(props.windowID).closeable = false;
+  
+  UpdateUsersTimer = setInterval(RequestContactList, 2000, null);
 })
+
+onUnmounted(() => {
+  clearInterval(UpdateUsersTimer);
+})
+
+function RequestContactList()
+{
+  socket.emit("get_friend_list", SessionToken);
+
+}
 
 </script>
 
@@ -65,6 +97,7 @@ i
   display: flex;
   align-items: center;
   min-width: 50px;
+  gap: .5rem;
 
   flex: 1;
   

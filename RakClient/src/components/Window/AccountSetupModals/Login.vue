@@ -38,7 +38,7 @@ async function login()
     // Successfully logged in
     if (response.success)
     {
-      console.log("Successfully logged in!!!");
+      emit("goto", 3)
 
     }else
     {

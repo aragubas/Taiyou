@@ -5,6 +5,7 @@ import { createWindow, destroyWindow, getInstance } from "../../window-manager";
 import Login from "./AccountSetupModals/Login.vue";
 import Register from "./AccountSetupModals/Register.vue";
 import StartScreen from "./AccountSetupModals/StartScreen.vue";
+import Connect from "./AccountSetupModals/Connect.vue";
 const props = defineProps<{ windowID: string }>();
 
 let screenID = ref(0);
@@ -33,10 +34,15 @@ watch(backbutton_hidden, (newValue: boolean) =>{
 })
 
 onMounted(() => {
-  getInstance(props.windowID).title = "Account Setup";
+  getInstance(props.windowID).title = "Account Setup & Authentication";
   getInstance(props.windowID).resizable = false;
   getInstance(props.windowID).width = 300;
   getInstance(props.windowID).width = 400;
+
+  if (localStorage.getItem("credentials") != null)
+  {
+    screenID.value = 3;
+  }
 });
 
 function goto(screenid: number)
@@ -52,7 +58,7 @@ function toggle_backbutton()
 function account_setup_complete()
 {
   destroyWindow(props.windowID);
-  createWindow({componentPath: "ContactList.vue", width: 800, height: 600});
+  createWindow({componentPath: "ContactList.vue", width: 200, height: 300});
 }
 
 const currentView = (id: number): any =>
@@ -68,6 +74,9 @@ const currentView = (id: number): any =>
     case 2:
       return Register;
 
+    case 3:
+      return Connect;
+
     default:
       return StartScreen;
   }
@@ -78,7 +87,7 @@ const currentView = (id: number): any =>
 <template>
   <div class="wrapper">
     <Transition>
-      <component :is="currentView(screenID)" @goto="goto" @toggle_backbutton="toggle_backbutton"></component>
+      <component :is="currentView(screenID)" @goto="goto" @toggle_backbutton="toggle_backbutton" @setup-complete="account_setup_complete"></component>
     </Transition>
   </div>
 </template>

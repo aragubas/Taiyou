@@ -1,9 +1,10 @@
-import { Socket, Server } from 'socket.io';
+import { Socket, Server, Namespace } from 'socket.io';
 import { v4 } from "uuid";
 import express from 'express';
 import Cors from './Middleware/Express/Cors';
 import { PrismaClient } from '@prisma/client';
 import UserRouter from './ExpressRoutes/User';
+import GetFriends from './HybridRoutes/User';
 
 class User
 {
@@ -16,8 +17,7 @@ class User
 
 const expressApp = express();
 const socketApp = new Server({ cors: { origin: "*", methods: ["GET", "POST"] } });
-const clients = new Map<string, User>();
-const prismaClient = new PrismaClient();
+const prisma = new PrismaClient();
 
 expressApp.use(express.json());
 expressApp.use(Cors);
@@ -45,21 +45,77 @@ interface ReceivedMessage
   content: string;
 }
 
+class ConnectedClient
+{
+  session_token: string | null = null;
+  userID: string | null = null;
+  socket: Socket
+
+  constructor(socket: Socket)
+  {
+    this.socket = socket;
+  }
+}
+
+interface WsClientAuthenticationData
+{
+  session_token: string;
+}
+
+async function WsUserIDFromSessionToken(session_token: string): Promise<string | null>
+{
+  const sessionToken = await prisma.sessionToken.findFirst({ where: { token: session_token } })
+  if (!sessionToken)
+  {
+    return null;
+  }
+
+  return sessionToken.ownerID;
+}
+
+const clients = new Map<string, ConnectedClient>();
 socketApp.on("connection", async (client: Socket) => {
-  client.on("message", (data: any) =>{
-    const message: ReceivedMessage = JSON.parse(data);
-    if (clients.has(message.token))
-    {
-      const user = clients.get(message.token);
-    }
-    //server.emit("receive-message", JSON.stringify(new Message(message.username, message.content, v4())));
+  client.on("disconnect", () => {
+    clients.delete(client.id);
   })
   
+  // Authenticates user
+  client.on("authenticate", async (data: any) =>{
+    const authRequest = data as WsClientAuthenticationData;
+    
+    if (authRequest == null || !authRequest.session_token == null) { client.emit("credential_error"); return; }
+    
+    // Get UserID from token
+    const userID = await WsUserIDFromSessionToken(authRequest.session_token);
+    if (userID == null) { client.emit("credential_error"); return; }
+    
+    clients.set(client.id, new ConnectedClient(client));
+    clients.get(client.id)!.session_token = authRequest.session_token
+    clients.get(client.id)!.userID = userID;
+
+    client.emit("auth_success")
+  })
+
+  // Returns updated friend list
+  client.on("get_friend_list", async (data: any) => {
+    const authData = data as WsClientAuthenticationData;
+    
+    const session = clients.get(client.id)!;
+    if (authData.session_token != clients.get(client.id)?.session_token || authData.session_token == null || session == null) { client.emit("credential_error"); return; }
+    
+    const user = await prisma.user.findUnique({where: { id: session.userID! }});
+    
+    if (user == null) { client.emit("credential_error"); return; }
+
+    const friends = await GetFriends(user.username);
+
+    client.emit("update_friend_list", friends)
+  })
 });
 
 async function bootstrap(socketPort: number, expressPort: number)
 {
-  await prismaClient.$connect();
+  await prisma.$connect();
   console.log("Prisma connected to DB");
   
   socketApp.listen(socketPort);
