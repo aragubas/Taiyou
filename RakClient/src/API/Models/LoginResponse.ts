@@ -1,4 +1,4 @@
-export default interface LoginResponse
+export default interface GetUserResponse
 {
   access_token: string;
   user_id: string;

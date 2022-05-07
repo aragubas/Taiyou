@@ -1,10 +1,13 @@
 import { Axios } from "axios";
 import { SaveCredentials } from "../Credentials";
 import ErrorResponse from "./Models/ErrorResponse";
-import LoginResponse from "./Models/LoginResponse";
+import GetUserResponse from "./Models/LoginResponse";
 
 export const ApiClient = new Axios({
   baseURL: "http://localhost:3314/",
+  headers: {
+    "Content-Type": "application/json",
+  }
 })
 
 export class OperationResult
@@ -21,41 +24,74 @@ export class OperationResult
 
 export async function Register(email: string, username: string, password: string): Promise<OperationResult | undefined>
 {
-  const request = await ApiClient.post("/", { email: email, username: username, password: password });
-
-  if (request.status === 200)
+  try
   {
-    const response = 
+    const request = await ApiClient.post("/user", JSON.stringify({ email: email, username: username, password: password }));
+  
+    if (request.status == 400)
+    {
+      const response = JSON.parse(request.data) as ErrorResponse;
+      
+      switch (response.message)
+      {
+        case "user_already_exists":
+          return new OperationResult(false, "User already exists.");
+  
+        default:
+          return new OperationResult(false, "Unknown error.");
+      }
+  
+    } else if (request.status === 200)
+    {
+      const response = JSON.parse(request.data) as GetUserResponse;
+  
+      console.log(response);
+    }
+    
+    return undefined;
+
+  } catch(exception)
+  {
+    return undefined;
+
   }
 
-  return undefined;
 }
 
 export async function Login(email: string, password: string): Promise<OperationResult | undefined>
 {
-  const request = await ApiClient.get("/user", { auth: { username: email, password: password } });
-
-  if (request.status == 401)
+  try
   {
-    const response = request.data as ErrorResponse;
-    
-    switch (response.message)
+    const request = await ApiClient.get("/user", { auth: { username: email, password: password } });
+  
+    if (request.status == 401)
     {
-      case "invalid_credentials":
-        return new OperationResult(false, "Invalid credentials.");
-
-      default:
-        return new OperationResult(false, "Unknown error.");
+      const response = request.data as ErrorResponse;
+      
+      switch (response.message)
+      {
+        case "invalid_credentials":
+          return new OperationResult(false, "Invalid credentials.");
+  
+        default:
+          return new OperationResult(false, "Unknown error.");
+      }
+  
+    } else if (request.status == 200)
+    {
+      const response = JSON.parse(request.data) as GetUserResponse;
+  
+      SaveCredentials(response.access_token, response.username, response.user_id);
+  
+      return new OperationResult(true, "Successfully logged in.");
     }
+  
+    return undefined;
 
-  } else if (request.status == 200)
+  } catch (exception)
   {
-    const response = JSON.parse(request.data) as LoginResponse;
+    return undefined;
 
-    SaveCredentials(response.access_token, response.username, response.user_id);
-
-    return new OperationResult(true, "Successfully logged in.");
   }
 
-  return undefined;
 }

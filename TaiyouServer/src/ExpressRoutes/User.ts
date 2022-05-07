@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { Router } from 'express';
 import { IncomingHttpHeaders } from 'http';
 import { v4 } from 'uuid';
+import GenericResponse from '../Models/GenericResponse';
 import BasicAuthHeaderDecode from '../Utils/BasicAuthHeaderDecode';
 
 let router = Router();
@@ -13,14 +14,6 @@ interface CreateUserRequest
   username: string;
   email: string;
   password: string;
-}
-
-class GenericResponse
-{
-  message: string;
-  constructor (message: string) {
-    this.message = message;
-  }
 }
 
 class GetUserResponse extends GenericResponse
@@ -41,11 +34,17 @@ class GetUserResponse extends GenericResponse
 router.post("/", async (request, response) =>{
   const createRequest = (request.body as CreateUserRequest);
 
+  if (request.body == "" || createRequest.email == "" || createRequest.username == "" || createRequest.password == "")
+  {
+    response.status(400).json(new GenericResponse("invalid_data"));
+    return;
+  }
+
   // TODO: Check if request data is correct
 
   // Check if user already exists
   const userUsername = await prisma.user.findUnique({ where: { username: createRequest.username } });
-  const userEmail = await prisma.user.findUnique({ where: { email: createRequest.email } })
+  const userEmail = await prisma.user.findUnique({ where: { email: createRequest.email } });
 
   if (userUsername != null || userEmail != null)
   {

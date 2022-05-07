@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Axios } from "axios";
 import { ref } from '@vue/runtime-dom';
+import { Register } from "../../../API/api";
 
 const emit = defineEmits(["goto", "toggle_backbutton"])
  
@@ -26,43 +27,37 @@ interface SuccessfulResponse
 async function register()
 {
   errorMessage.value = "";
+  
+  const response = await Register(email.value, username.value, password.value);
 
-  const request = new Axios({
-    baseURL: "http://localhost:3314",
-    headers: {
-      "Content-Type": "application/json",
-    }
-  });
-
-  const thing = await request.post("/user", { username: username.value, email: email.value, password: password.value });
-
-  console.log(thing.data);
-
-  if (thing.status == 400)
+  if (response == undefined)
   {
-    const response = JSON.parse(thing.data) as ErrorResponse;
+    errorMessage.value = "A very Unknown error happened.";
 
-    if (response.message == "user_already_exists")
+  }else
+  {
+    // Successfully logged in
+    if (response.success)
     {
-      errorMessage.value = "This user already exists.";
+      console.log("Successfully logged in!!!");
+
+    }else
+    {
+      errorMessage.value = response.message;
     }
-  }
-
-  if (thing.status == 200)
-  {
-    const response = JSON.parse(thing.data) as SuccessfulResponse;
-
-    
 
   }
 
+  loading.value = false;
+  emit("toggle_backbutton");
 }
 
 function formPayload()
 {
-
   // Prevent calling register twice
   if (loading.value) { return; }
+
+  register();
 
   loading.value = true;
 }
