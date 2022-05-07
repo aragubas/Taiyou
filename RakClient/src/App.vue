@@ -10,6 +10,7 @@ import { LoadCredentials } from "./Credentials";
 
 // Create account window if no credentials are found
 createWindow({componentPath: "AccountSetup.vue", width: 440, height: 340, closeable: false});
+createWindow({componentPath: "ChannelView.vue", width: 440, height: 340});
 
 </script>
 
@@ -34,6 +35,7 @@ body {
   width: 0.5rem;
   height: 0.5rem;
   background: rgb(40, 42, 48);
+  border-radius: 0.5rem;
 }
 *::-webkit-scrollbar-thumb {
   background: rgba(50, 52, 62, 0.9);

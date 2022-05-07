@@ -18,9 +18,7 @@ export function SaveCredentials(session_token: string, username: string, userID:
   newCredentials.userID = userID;
   newCredentials.logged_in = true;
 
-  credentials = ref(newCredentials);
-  localStorage.setItem("credentials", JSON.stringify(credentials.value));
-
+  localStorage.setItem("credentials", JSON.stringify(newCredentials));
   LoadCredentials();
 }
 
@@ -30,7 +28,8 @@ export function LoadCredentials()
   
   if (storedCredentials)
   {
-    credentials.value = JSON.parse(storedCredentials);
+    credentials.value = JSON.parse(storedCredentials) as StoredCredentals;
+    
   }
 
 

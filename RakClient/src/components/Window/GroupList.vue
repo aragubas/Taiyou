@@ -28,13 +28,13 @@ interface GetGroupsResponse
 
 async function UpdateGroupList(data: any)
 {
-  groupsList.value.splice(0, groupsList.value.length);
+  groups.value.splice(0, groups.value.length);
 
   const response = data as GetGroupsResponse;
   
 
   response.groups.forEach(group => {
-    groupsList.value.push(new Group(group.id, group.name))
+    groups.value.push(new Group(group.id, group.name))
   })
 
   loading.value = false;
@@ -42,6 +42,14 @@ async function UpdateGroupList(data: any)
   clearTimeout(requestedLoadingBar);
 
   requested = false;  
+}
+
+socket.on("disconnect", onDisconnected)
+socket.on("connected", () => { loading.value = true; })
+
+function onDisconnected()
+{
+  groups.value.splice(0, groups.value.length);  
 }
 
 onMounted(() => {
@@ -53,12 +61,18 @@ onMounted(() => {
   RequestGroupList();
 })
 
+onUnmounted(() => {
+  socket.off("disconnected", onDisconnected)
+  socket.off("update_groups", UpdateGroupList)
+  clearInterval(UpdateGroupsTimer);
+})
+
 function RequestGroupList()
 {
   if (Connected.value == false) { requested = false; return; }
   if (requested == true) { return; }
   
-  socket.emit("get_groups", SessionToken);
+  socket.emit("get_groups", SessionToken());
 
   // Wait 500ms after showing the loading bar
   requestedLoadingBar = setTimeout(() => { if(!requested) { return; } loading.value = true; }, 500, null);
@@ -79,7 +93,7 @@ class Group
   }
 }
 
-const groupsList = ref(new Array<Group>());
+const groups = ref(new Array<Group>());
 
 </script>
 
@@ -90,7 +104,7 @@ const groupsList = ref(new Array<Group>());
     <Disconnected v-if="!Connected"></Disconnected>
 
     <ul v-if="Connected">
-      <li v-for="group in groupsList" :key="group.id" class="group">
+      <li v-for="group in groups" :key="group.id" class="group">
         <span class="group-icon"></span>
         
         <div class="groupname-box">

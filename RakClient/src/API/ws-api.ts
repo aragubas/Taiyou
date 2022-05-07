@@ -13,27 +13,16 @@ export function si(newValue: boolean | undefined ): boolean
   return loginWindowClosed;
 }
 
-export class SessionTokenStore
-{
-  session_token: string;
-
-  constructor(session_token: string)
-  {
-    this.session_token = session_token;
-  }
-}
-
 export const Connected = ref(false)
-export let SessionToken: SessionTokenStore | null = null;
+export function SessionToken() { return { session_token: credentials.value.session_token } }
 
 export function Connect()
 {
   LoadCredentials();
-  SessionToken = new SessionTokenStore(credentials!.value.session_token);
 
   socket.connect();
 
-  socket.emit("authenticate", SessionToken)
+  socket.emit("authenticate", SessionToken())
 }
 
 function Disconnected()

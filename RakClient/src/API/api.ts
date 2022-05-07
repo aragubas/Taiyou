@@ -73,7 +73,7 @@ export async function Login(email: string, password: string): Promise<OperationR
       switch (response.message)
       {
         case "invalid_credentials":
-          return new OperationResult(false, "Invalid credentials.");
+          return new OperationResult(false, "Username or password invalid.");
   
         default:
           return new OperationResult(false, "Unknown error.");

@@ -1,32 +1,15 @@
 <script setup lang="ts">
 import { onActivated, onMounted, ref } from "@vue/runtime-core";
-import { v4 } from "uuid";
-import { ContextMenuItem, ContextMenuItemType } from "../../ContextMenuItem";
-import { GlobalMenuItem } from "../../global-menu";
+import { socket } from "../../API/ws-api";
 import { getInstance } from "../../window-manager";
-import { Manager } from "socket.io-client";
-import { credentials } from "../../Credentials"
-import { manager } from "../../API/ws-api";
-
-function fileMenu() {
-  alert("File Menu!");
-}
-
-function thingMenu()
-{
-  alert("thing");
-}
 
 const props = defineProps<{ windowID: string }>();
 
 onMounted(() => {
-  getInstance(props.windowID).title = "Chat Test";
+  getInstance(props.windowID).title = "Channel";
 
-  // Global Menu test items
-  getInstance(props.windowID).globalMenu?.items.push(new GlobalMenuItem("File", undefined, new Array<ContextMenuItem>(new ContextMenuItem(ContextMenuItemType.Button, 'Test', fileMenu), new ContextMenuItem(ContextMenuItemType.Separator), new ContextMenuItem(ContextMenuItemType.Button, "Thing", thingMenu))));
-  getInstance(props.windowID).globalMenu?.items.push(new GlobalMenuItem("Thing", thingMenu))
+  socket.emit("get_channel", { id: "cfa495d3-ba1a-497e-8a6a-3ea35e4e1723" })
 });
-
 
 interface Message
 {
@@ -36,16 +19,14 @@ interface Message
 }
 
 const messages = ref(Array<Message>());
-const socket = manager.socket("/");
 let message = ref("");
 
-socket.on("receive-message", async (data) => {
-  messages.value.push(JSON.parse(data) as Message);
-})
+socket.on("update_channel", (data: Message) => {
+  messages.value.push(data);
+});
 
 function sendMessage()
 {
-  socket.emit("message", JSON.stringify({ content: message.value, username: credentials!.value.username }));
 
   message.value = "";
 }
@@ -87,10 +68,12 @@ ol
   overflow-y: scroll;
   margin-bottom: .5rem;
   gap: .5rem;
+  padding: .3rem;
 }
 
 .chat-controls
 {
+  padding: .2rem;
   display: flex;
 }
 
@@ -109,7 +92,6 @@ ol
 
 .wrapper {
   box-sizing: border-box;
-  padding: .5rem;
   height: 100%;
 }
 

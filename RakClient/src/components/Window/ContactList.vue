@@ -17,6 +17,14 @@ interface UpdateContactResponse
   usernames: Array<string>
 }
 
+socket.on("disconnect", onDisconnected)
+socket.on("connected", () => { loading.value = true; })
+
+function onDisconnected()
+{
+  contacts.value.splice(0, contacts.value.length);  
+}
+
 socket.on("update_friend_list", UpdateContactList)
 async function UpdateContactList(data: any)
 {
@@ -66,9 +74,9 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  console.log("unmount")
   clearInterval(UpdateUsersTimer);
   socket.off("update_friend_list", UpdateContactList)
+  socket.off("disconnected", onDisconnected)
 })
 
 function RequestContactList()
@@ -76,10 +84,10 @@ function RequestContactList()
   if (Connected.value == false) { requested = false; return; }
   if (requested == true) { return; }
 
-  socket.emit("get_friend_list", SessionToken);
+  socket.emit("get_friend_list", SessionToken());
 
   requestedLoadingBar = setTimeout(() => { if(!requested) { return; } loading.value = true; }, 500, null);
-
+ 
   loading.value = true;
   requested = true;
 }

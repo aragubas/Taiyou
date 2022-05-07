@@ -44,6 +44,11 @@ interface WsClientAuthenticationData
   session_token: string;
 }
 
+interface WsClientGetChannelMessages extends WsClientAuthenticationData
+{
+  channel_id: string;
+}
+
 async function WsUserIDFromSessionToken(session_token: string): Promise<string | null>
 {
   const sessionToken = await prisma.sessionToken.findFirst({ where: { token: session_token } })
@@ -103,6 +108,16 @@ socketApp.on("connection", async (client: Socket) => {
     client.emit("update_friend_list", friends)
   })  
 
+  client.on("get_channel", async (data: any) => {
+    const request = data as WsClientGetChannelMessages;
+
+    console.log(request.channel_id)
+
+    const channelMessages = await prisma.channel.findUnique({ where: { id: request.channel_id } })
+
+    client.emit("update_channel", channelMessages);
+  })
+
   // Returns updated group list
   client.on("get_groups", async (data: any) => {
     const authData = data as WsClientAuthenticationData;
@@ -130,6 +145,7 @@ socketApp.on("connection", async (client: Socket) => {
 
     client.emit("update_groups", newGroupResponse)
   })
+
 });
 
 async function bootstrap(socketPort: number, expressPort: number)

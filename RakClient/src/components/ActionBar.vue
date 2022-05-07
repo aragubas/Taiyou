@@ -7,7 +7,7 @@ import { NotificationList } from "../notifications-manager";
 import WindowInstances, { focusWindow, getInstance } from "../window-manager";
 
 let notificationsVisible = ref(false);
-let autoHide = ref(false);
+let autoHide = ref(true);
 
 function _focusWindow(id: string) {
   getInstance(id).toggleMinimize();
