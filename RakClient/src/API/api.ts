@@ -45,7 +45,9 @@ export async function Register(email: string, username: string, password: string
     {
       const response = JSON.parse(request.data) as GetUserResponse;
   
-      console.log(response);
+      SaveCredentials(response.access_token, response.username, response.user_id);
+
+      return new OperationResult(true, "Successfully registered.");
     }
     
     return undefined;

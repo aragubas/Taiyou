@@ -15,7 +15,7 @@ if (localStorage.getItem("credentials") == null)
 }else
 {
   LoadCredentials();
-  createWindow({componentPath: "Welcome.vue", width: 800, height: 600});
+  createWindow({componentPath: "ContactList.vue", width: 800, height: 600});
 }
 
 </script>

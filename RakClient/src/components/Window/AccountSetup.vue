@@ -7,7 +7,6 @@ import Register from "./AccountSetupModals/Register.vue";
 import StartScreen from "./AccountSetupModals/StartScreen.vue";
 const props = defineProps<{ windowID: string }>();
 
-
 let screenID = ref(0);
 let backbutton_hidden = ref(true);
 
@@ -36,6 +35,8 @@ watch(backbutton_hidden, (newValue: boolean) =>{
 onMounted(() => {
   getInstance(props.windowID).title = "Account Setup";
   getInstance(props.windowID).resizable = false;
+  getInstance(props.windowID).width = 300;
+  getInstance(props.windowID).width = 400;
 });
 
 function goto(screenid: number)
@@ -46,6 +47,12 @@ function goto(screenid: number)
 function toggle_backbutton()
 {
   backbutton_hidden.value = !backbutton_hidden.value;
+}
+
+function account_setup_complete()
+{
+  destroyWindow(props.windowID);
+  createWindow({componentPath: "ContactList.vue", width: 800, height: 600});
 }
 
 const currentView = (id: number): any =>

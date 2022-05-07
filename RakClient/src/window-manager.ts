@@ -1,3 +1,4 @@
+import { stringify } from "querystring";
 import { v4 } from "uuid";
 import { ComponentPublicInstance, ref, Ref } from "vue";
 import { GlobalMenuInstance, GlobalMenuItem } from "./global-menu";
@@ -108,10 +109,11 @@ export function createWindow(properties: WindowFactoryProperties): string {
   newWindow.globalMenu = new GlobalMenuInstance(newWindowId);
 
   Sinas.value.push(newWindow);
+
   // Focus newly created window
   focusWindow(newWindowId);
 
-  return `taiyouwindow-${newWindowId}`;
+  return newWindowId;
 }
 
 export function destroyWindow(id: string) {

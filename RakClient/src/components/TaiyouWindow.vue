@@ -9,18 +9,13 @@ import {
 
 const props = defineProps<{ windowID: string }>();
 
-let unfocused = ref(true);
 let moveMouseCapture = false;
 let moveMouseInitialX = 0;
 let moveMouseInitialY = 0;
 let resizeMouseCapture = false;
 let resizeMouseInitialX = 0;
 let resizeMouseInitialY = 0;
-let component = defineAsyncComponent(() => import( /* @vite-ignore */ taiyouWindow.value.componentPath));
-
-const taiyouWindow = computed(() => {
-  return getInstance(props.windowID);
-})
+let component = defineAsyncComponent(() => import( /* @vite-ignore */ getInstance(props.windowID).componentPath));
 
 onUnmounted(() => {
   window.removeEventListener("resize", constraintGeometry);
@@ -35,8 +30,8 @@ onMounted(() => {
 // Center the window on the screen
 function CenterWindow()
 {
-  getInstance(props.windowID).left = window.innerWidth / 2 - taiyouWindow.value.width / 2;
-  getInstance(props.windowID).top = window.innerHeight / 2 - taiyouWindow.value.height / 2;
+  getInstance(props.windowID).left = window.innerWidth / 2 - getInstance(props.windowID).width / 2;
+  getInstance(props.windowID).top = window.innerHeight / 2 - getInstance(props.windowID).height / 2;
 }
 
 function moveMouseMove(event: MouseEvent) {
@@ -87,8 +82,8 @@ function resizeMouseMove(event: MouseEvent) {
   }
 
   if (resizeMouseCapture) {
-    taiyouWindow.value.width = event.x - getInstance(props.windowID).left - resizeMouseInitialX;
-    taiyouWindow.value.height = event.y - getInstance(props.windowID).top - resizeMouseInitialY;
+    getInstance(props.windowID).width = event.x - getInstance(props.windowID).left - resizeMouseInitialX;
+    getInstance(props.windowID).height = event.y - getInstance(props.windowID).top - resizeMouseInitialY;
   }
 
   constraintGeometry();
@@ -98,8 +93,8 @@ function resizeMouseDown(event: MouseEvent) {
   event.preventDefault();
   focus();
   resizeMouseCapture = true;
-  resizeMouseInitialX = event.x - (getInstance(props.windowID).left + taiyouWindow.value.width);
-  resizeMouseInitialY = event.y - (getInstance(props.windowID).top + taiyouWindow.value.height);
+  resizeMouseInitialX = event.x - (getInstance(props.windowID).left + getInstance(props.windowID).width);
+  resizeMouseInitialY = event.y - (getInstance(props.windowID).top + getInstance(props.windowID).height);
 
   document.addEventListener("mousemove", resizeMouseMove);
 }
@@ -116,34 +111,34 @@ function constraintGeometry() {
       getInstance(props.windowID).left = 0;
     }
 
-    if (getInstance(props.windowID).left + taiyouWindow.value.width >= window.innerWidth) {
-      getInstance(props.windowID).left = window.innerWidth - taiyouWindow.value.width;
+    if (getInstance(props.windowID).left + getInstance(props.windowID).width >= window.innerWidth) {
+      getInstance(props.windowID).left = window.innerWidth - getInstance(props.windowID).width;
     }
 
     if (getInstance(props.windowID).top < 0) {
       getInstance(props.windowID).top = 0;
     }
     
-    if (getInstance(props.windowID).top + taiyouWindow.value.height >= window.innerHeight) {
-      getInstance(props.windowID).top = window.innerHeight - taiyouWindow.value.height;
+    if (getInstance(props.windowID).top + getInstance(props.windowID).height >= window.innerHeight) {
+      getInstance(props.windowID).top = window.innerHeight - getInstance(props.windowID).height;
     }
 
   } else {
     // Keep window inside parent
-    if (getInstance(props.windowID).left + taiyouWindow.value.width > window.innerWidth) {
-      taiyouWindow.value.width = window.innerWidth - getInstance(props.windowID).left;
+    if (getInstance(props.windowID).left + getInstance(props.windowID).width > window.innerWidth) {
+      getInstance(props.windowID).width = window.innerWidth - getInstance(props.windowID).left;
     }
 
-    if (getInstance(props.windowID).top + taiyouWindow.value.height > window.innerHeight) {
-      taiyouWindow.value.height = window.innerHeight - getInstance(props.windowID).top;
+    if (getInstance(props.windowID).top + getInstance(props.windowID).height > window.innerHeight) {
+      getInstance(props.windowID).height = window.innerHeight - getInstance(props.windowID).top;
     }
 
-    if (taiyouWindow.value.width < taiyouWindow.value.minWidth) {
-      taiyouWindow.value.width = taiyouWindow.value.minWidth;
+    if (getInstance(props.windowID).width < getInstance(props.windowID).minWidth) {
+      getInstance(props.windowID).width = getInstance(props.windowID).minWidth;
     }
 
-    if (taiyouWindow.value.height < taiyouWindow.value.minHeight) {
-      taiyouWindow.value.height = taiyouWindow.value.minHeight;
+    if (getInstance(props.windowID).height < getInstance(props.windowID).minHeight) {
+      getInstance(props.windowID).height = getInstance(props.windowID).minHeight;
     }
   }
 }
@@ -163,26 +158,26 @@ function focus() {
 <template>
   <div
     v-bind:style="{
-      left: taiyouWindow.left + 'px',
-      top: taiyouWindow.top + 'px',
-      width: taiyouWindow.width + 'px',
-      height: taiyouWindow.height + 'px',
+      left: getInstance(props.windowID).left + 'px',
+      top: getInstance(props.windowID).top + 'px',
+      width: getInstance(props.windowID).width + 'px',
+      height: getInstance(props.windowID).height + 'px',
     }"
     class="window-container"
     :class="[
       focusedWindow == props.windowID ? 'focused' : '',
-      taiyouWindow.minimized ? 'minimized' : '',
+      getInstance(props.windowID).minimized ? 'minimized' : '',
     ]"
     @mousedown="focus"
   >
     <header>
       <div class="window-header" @mousedown="moveMouseDown" @mouseup="moveMouseUp" >
         <div class="window-actions">
-          <a class="window-button" name="close" @click="destroyWindow(props.windowID)" v-if="taiyouWindow.closeable"></a>
+          <a class="window-button" name="close" @click="destroyWindow(props.windowID)" v-if="getInstance(props.windowID).closeable"></a>
 
-          <a class="window-button" name="minimize" @click="taiyouWindow.minimize()"></a>
+          <a class="window-button" name="minimize" @click="getInstance(props.windowID).minimize()"></a>
         </div>
-        <p>{{ taiyouWindow.title }}</p>
+        <p>{{ getInstance(props.windowID).title }}</p>
       </div>
     </header>
 
@@ -190,7 +185,7 @@ function focus() {
       <component :is="component" :windowID="windowID" />
     </main>
 
-    <span class="resize-handle" @mousedown="resizeMouseDown" @mouseup="resizeMouseUp" v-if="taiyouWindow.resizable">
+    <span class="resize-handle" @mousedown="resizeMouseDown" @mouseup="resizeMouseUp" v-if="getInstance(props.windowID).resizable">
       ...
     </span>
 
