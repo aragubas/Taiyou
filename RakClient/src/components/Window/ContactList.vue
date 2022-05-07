@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { getInstance } from "../../window-manager";
+import { createWindow, getInstance } from "../../window-manager";
 import { defineProps, onMounted, onUnmounted, ref, Ref } from "@vue/runtime-core";
 import { v4 } from "uuid";
 import { SessionToken, socket } from "../../API/ws-api";
+import LoadingBar from "../LoadingBar.vue";
 const props = defineProps<{ windowID: string }>();
 
 let UpdateUsersTimer: number;
+let loading = ref(false);
 
 interface UpdateContactResponse
 {
@@ -13,7 +15,7 @@ interface UpdateContactResponse
 }
 
 socket.on("update_friend_list", UpdateContactList)
-function UpdateContactList(data: any)
+async function UpdateContactList(data: any)
 {
   const response = data as UpdateContactResponse
 
@@ -22,6 +24,8 @@ function UpdateContactList(data: any)
   response.usernames.forEach(user => {
     contact_examples.value.push(new Contact(user, "Unknown"))  
   });
+
+  loading.value = false;
 }
 
 class Contact
@@ -46,22 +50,26 @@ onMounted(() => {
   
   UpdateUsersTimer = setInterval(RequestContactList, 2000, null);
   RequestContactList();
+
+  createWindow({componentPath: "GroupList.vue", width: 200, height: 300});
 })
 
 onUnmounted(() => {
   clearInterval(UpdateUsersTimer);
+  socket.off("update_friend_list", UpdateContactList)
 })
 
 function RequestContactList()
 {
   socket.emit("get_friend_list", SessionToken);
-
+  loading.value = true;
 }
 
 </script>
 
 <template>
   <div class="wrapper">
+    <LoadingBar :active="loading"></LoadingBar>
     <ol>
       <li v-for="contact in contact_examples" :key="contact.id" class="contact">
         <span class="profilepicture"></span>
@@ -101,7 +109,6 @@ i
   gap: .5rem;
 
   flex: 1;
-  
 }
 
 .contact span.profilepicture
@@ -119,9 +126,7 @@ i
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-
 }
-
 
 .contact
 {

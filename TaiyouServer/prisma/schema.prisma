@@ -22,6 +22,8 @@ model User {
 
   FriendRequest    FriendRequest[] @relation("FromRequest")
   MyFriendRequests FriendRequest[] @relation("MyFriendRequests")
+
+  MyGroups Group[] @relation("groups")
 }
 
 model Friends {
@@ -48,4 +50,31 @@ model FriendRequest {
 
   to   User   @relation("FromRequest", fields: [toID], references: [username])
   toID String
+}
+
+model Group {
+  id    String @id @default(uuid())
+  name  String @unique
+  users User[] @relation("groups")
+
+  Channels Channel[] @relation("channels")
+
+}
+
+model Channel {
+  id          String @id @default(uuid())
+  channelName String @unique
+  Group       Group  @relation("channels", fields: [groupID], references: [id])
+  groupID     String
+
+  Messages Message[] @relation("messages")
+}
+
+model Message {
+  id      String @id @default(uuid())
+  content String
+
+  Channel   Channel @relation("messages", fields: [channelID], references: [id])
+  channelID String
+
 }

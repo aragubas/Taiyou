@@ -23,8 +23,6 @@ export function Connect()
   LoadCredentials();
   SessionToken = new SessionTokenStore(credentials!.value.session_token);
 
-  console.log(credentials.value.session_token)
-
   socket.connect();
 
   socket.emit("authenticate", SessionToken)

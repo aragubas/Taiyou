@@ -5,6 +5,8 @@ import Cors from './Middleware/Express/Cors';
 import { PrismaClient } from '@prisma/client';
 import UserRouter from './ExpressRoutes/User';
 import GetFriends from './HybridRoutes/User';
+import BasicGroupInfo from './Models/GetGroups/BasicGroupInfo';
+import GetGroupsResponse from './Models/GetGroups/GetGroupsResponse';
 
 class User
 {
@@ -111,6 +113,24 @@ socketApp.on("connection", async (client: Socket) => {
     const friends = await GetFriends(user.username);
 
     client.emit("update_friend_list", friends)
+  })
+
+  client.on("get_groups", async (data: any) => {
+    const authData = data as WsClientAuthenticationData;
+    
+    const session = clients.get(client.id)!;
+    if (authData.session_token != clients.get(client.id)?.session_token || authData.session_token == null || session == null) { client.emit("credential_error"); client.disconnect(); return; }
+
+    const groups = await prisma.group.findMany({ where: { users: { some: { id: clients.get(client.id)!.userID! } } } })
+    
+    const newGroupResponse = new GetGroupsResponse(new Array<BasicGroupInfo>());
+
+    for (const group of groups)
+    {
+      newGroupResponse.groups.push(new BasicGroupInfo(group.id, group.name));
+    }
+
+    client.emit("update_groups", newGroupResponse)
   })
 });
 
