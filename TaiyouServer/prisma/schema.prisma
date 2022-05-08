@@ -23,7 +23,8 @@ model User {
   FriendRequest    FriendRequest[] @relation("FromRequest")
   MyFriendRequests FriendRequest[] @relation("MyFriendRequests")
 
-  MyGroups Group[] @relation("groups")
+  MyGroups   Group[]   @relation("groups")
+  MyMessages Message[] @relation("messageOwner")
 }
 
 model Friends {
@@ -65,7 +66,8 @@ model Channel {
   id          String @id @default(uuid())
   channelName String @unique
   Group       Group  @relation("channels", fields: [groupID], references: [id])
-  groupID     String
+  groupID     String @unique
+
 
   Messages Message[] @relation("messages")
 }
@@ -77,4 +79,8 @@ model Message {
   Channel   Channel @relation("messages", fields: [channelID], references: [id])
   channelID String
 
+  Owner         User   @relation("messageOwner", fields: [ownerUsername], references: [username])
+  ownerUsername String
+
+  date DateTime @default(now())
 }

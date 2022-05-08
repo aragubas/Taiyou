@@ -1,118 +1,52 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from "@vue/runtime-dom";
-import { v4 } from "uuid";
-import { SessionToken, socket, Connected } from "../../API/ws-api";
 import { destroyWindow, getInstance } from "../../window-manager";
-import LoadingBar from "../LoadingBar.vue";
-import Disconnected from "../Overlays/Disconnected.vue";
+import GroupList from "./GroupListModals/GroupList.vue";
+import GroupInfo from "./GroupListModals/GroupInfo.vue";
 const props = defineProps<{ windowID: string }>();
-
-let UpdateGroupsTimer: number;
-let loading = ref(false);
-let requested = false;
-let requestedLoadingBar: number;
-
-socket.on("update_groups", UpdateGroupList);
-
-interface GroupResponse
-{
-  id: string;
-  name: string;
-}
-
-interface GetGroupsResponse
-{
-  groups: Array<GroupResponse>
-}
-
-async function UpdateGroupList(data: any)
-{
-  groups.value.splice(0, groups.value.length);
-
-  const response = data as GetGroupsResponse;
-  
-
-  response.groups.forEach(group => {
-    groups.value.push(new Group(group.id, group.name))
-  })
-
-  loading.value = false;
-  
-  clearTimeout(requestedLoadingBar);
-
-  requested = false;  
-}
-
-socket.on("disconnect", onDisconnected)
-socket.on("connected", () => { loading.value = true; })
-
-function onDisconnected()
-{
-  groups.value.splice(0, groups.value.length);  
-}
+let screenID = ref(1);
+let groupViewID = ref("17c30d4a-80ba-4be5-8503-25545eafe604")
 
 onMounted(() => {
   getInstance(props.windowID).title = "Groups";
   getInstance(props.windowID).closeable = false;
-
-  UpdateGroupsTimer = setInterval(RequestGroupList, 2500, null);
-
-  RequestGroupList();
 })
 
-onUnmounted(() => {
-  socket.off("disconnected", onDisconnected)
-  socket.off("update_groups", UpdateGroupList)
-  clearInterval(UpdateGroupsTimer);
-})
-
-function RequestGroupList()
+function currentView(id: number): any
 {
-  if (Connected.value == false) { requested = false; return; }
-  if (requested == true) { return; }
-  
-  socket.emit("get_groups", SessionToken());
-
-  // Wait 500ms after showing the loading bar
-  requestedLoadingBar = setTimeout(() => { if(!requested) { return; } loading.value = true; }, 500, null);
-  
-  requested = true;
-
-}
-
-class Group
-{
-  id: string;
-  name: string;
-
-  constructor(id: string, name: string)
+  switch(screenID.value)
   {
-    this.id = id;
-    this.name = name;
+    case 0:
+      getInstance(props.windowID).title = "Groups";
+      return GroupList
+
+    case 1:
+      getInstance(props.windowID).title = "Group Info";
+      return GroupInfo
+
+    default:
+      return GroupList
   }
 }
 
-const groups = ref(new Array<Group>());
+function setGroupViewID(groupID: string)
+{
+  groupViewID.value = groupID;
+}
+
+function goto(newScreenID: number)
+{
+  screenID.value = newScreenID;
+}
 
 </script>
 
 <template>
   <div class="wrapper">
-    <LoadingBar :active="loading" :always_visible="true" v-if="Connected"></LoadingBar>
-
-    <Disconnected v-if="!Connected"></Disconnected>
-
-    <ul v-if="Connected">
-      <li v-for="group in groups" :key="group.id" class="group">
-        <span class="group-icon"></span>
-        
-        <div class="groupname-box">
-          <p>{{group.name}}</p>
-          <i>Group</i>
-        </div>
-      </li>
-    </ul>
+    <Transition>
+      <component :is="currentView(screenID)" @goto="goto" @setGroupViewID="setGroupViewID" :groupID="groupViewID"></component>
+    </Transition>
   </div>
 
 </template>
@@ -125,56 +59,29 @@ const groups = ref(new Array<Group>());
   height: 100%;
 }
 
-ul
-{
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  overflow-y: auto;
-  padding: .5rem;
+.v-enter-active,
+.v-leave-active {
+  transition: transform .5s ease, opacity .5s ease;
+  will-change: transform, opacity;
 }
 
-.group span.group-icon
-{
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  background: rgb(80, 82, 88);
-  border-radius: 100%;
+.v-leave-from {
+  transform: translateX(0%);
+  opacity: 100%;
 }
 
-.groupname-box
-{
-  display: flex;
-  align-items: center;
-  min-width: 50px;
-  gap: .5rem;
-
-  flex: 1;
+.v-leave-to {
+  transform: translateX(-100%);
+  opacity: 0%;
 }
 
-i
-{
-  font-size: .7rem;
+.v-enter-from {
+  transform: translateX(-100%);
+  opacity: 0%;
 }
 
-
-.groupname-box p
-{
-  width: 100%;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
+.v-enter-to {
+  transform: translateX(0%);
+  opacity: 100%;
 }
-
-.group
-{
-  display: flex;
-  align-items: stretch;
-  gap: .5rem;
-  background: rgb(60, 62, 68);
-  border-radius: 4px;
-  padding: .4rem;
-}
-
 </style>

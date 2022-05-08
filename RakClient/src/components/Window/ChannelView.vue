@@ -8,27 +8,54 @@ const props = defineProps<{ windowID: string }>();
 onMounted(() => {
   getInstance(props.windowID).title = "Channel";
 
-  socket.emit("get_channel", { id: "cfa495d3-ba1a-497e-8a6a-3ea35e4e1723" })
+  socket.emit("get_channel", JSON.stringify({ channel_id: "5513e0ea-c7c2-4718-b05a-a7107e137efb" }))
 });
 
 interface Message
 {
-  username: string;
+  channelID: string;
   content: string;
   id: string;
+  ownerUsername: string;
+  date: string;
 }
 
 const messages = ref(Array<Message>());
 let message = ref("");
 
-socket.on("update_channel", (data: Message) => {
-  messages.value.push(data);
+socket.on("update_channel", (data: Array<Message>) => {
+  console.log(data)
+  
+  data.forEach(message => {
+    messages.value.push(message);
+  })
+
 });
 
 function sendMessage()
 {
 
   message.value = "";
+}
+
+function formatDate(dateString: string)
+{
+  const date = new Date(dateString);
+  let returnString = "";
+
+  // Date
+  if (date.getDay() === new Date().getDay())
+  {
+    returnString += "Today at";
+
+  } else if (date.getDay() == new Date().getDay() - 1) {
+    returnString += "Yesterday at";
+
+  } else {
+    returnString += `${date.toLocaleDateString()} at`
+  }
+
+  return `${returnString} ${date.toLocaleTimeString()}`;
 }
 
 </script>
@@ -39,7 +66,10 @@ function sendMessage()
       <div class="grid">
         <ol>
           <li v-for="message in messages" :key="message.id" class="message">
-            <h1>{{message.username}}</h1>
+            <header>
+              <h1>{{ message.ownerUsername }}</h1>
+              <p>{{ formatDate(message.date) }}</p>
+            </header>
             <p>{{message.content}}</p>
           </li>
         </ol>
@@ -54,17 +84,39 @@ function sendMessage()
 </template>
 
 <style scoped>
+
+.message
+{
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+}
+
 .message h1
 {
   text-align: left;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: normal;
+}
+
+.message header
+{
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  color: rgb(190, 190, 190);
+}
+
+.message header p
+{
+  color: rgb(150, 150, 150);
+  font-size: .7rem;
 }
 
 ol
 {
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   overflow-y: scroll;
   margin-bottom: .5rem;
   gap: .5rem;
@@ -81,7 +133,6 @@ ol
 {
   width: 100%;
 }
-
 
 .grid
 {

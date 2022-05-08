@@ -39,14 +39,41 @@ class ConnectedClient
   }
 }
 
+interface ChannelInfos
+{
+  id: string;
+  channelName: string;
+}
+
+class GetGroupInfoResponse
+{
+  id: string;
+  name: string;
+  channels: Array<ChannelInfos>
+
+  constructor(id: string, name: string, channels: Array<ChannelInfos>)
+  {
+    this.id = id;
+    this.name = name;
+    this.channels = channels;
+  }
+}
+
 interface WsClientAuthenticationData
 {
   session_token: string;
 }
 
-interface WsClientGetChannelMessages extends WsClientAuthenticationData
+interface WsClientGetChannelMessages
 {
+  session_token: string;
   channel_id: string;
+}
+
+interface WsClientGetGroupInfo
+{
+  session_token: string;
+  group_id: string;
 }
 
 async function WsUserIDFromSessionToken(session_token: string): Promise<string | null>
@@ -86,7 +113,7 @@ socketApp.on("connection", async (client: Socket) => {
   // Returns updated friend list
   client.on("get_friend_list", async (data: any) => {
     const authData = data as WsClientAuthenticationData;
-    
+
     const session = clients.get(client.id)!;
     if (authData.session_token != clients.get(client.id)?.session_token || authData.session_token == null || session == null || session.session_token == null) 
     { 
@@ -109,13 +136,23 @@ socketApp.on("connection", async (client: Socket) => {
   })  
 
   client.on("get_channel", async (data: any) => {
-    const request = data as WsClientGetChannelMessages;
+    const request = JSON.parse(data) as WsClientGetChannelMessages;
 
-    console.log(request.channel_id)
-
-    const channelMessages = await prisma.channel.findUnique({ where: { id: request.channel_id } })
+    const channelMessages = await prisma.message.findMany({ where: { channelID: request.channel_id } })
 
     client.emit("update_channel", channelMessages);
+  })
+
+  client.on("get_group_info", async (data: any) =>{
+    const request = JSON.parse(data) as WsClientGetGroupInfo; 
+    
+    const groupInfo = await prisma.group.findUnique({ where: { id: request.group_id } });
+    
+    if (groupInfo == null) { client.emit("group_not_found"); return; }
+
+    const groupChannels = await prisma.channel.findMany( { where: { groupID: groupInfo.id }  } )
+
+    client.emit(`update_group:${request.group_id}`, new GetGroupInfoResponse(groupInfo.id, groupInfo.name, groupChannels));
   })
 
   // Returns updated group list
