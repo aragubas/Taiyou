@@ -4,11 +4,13 @@ import { socket } from "../../API/ws-api";
 import { getInstance } from "../../window-manager";
 
 const props = defineProps<{ windowID: string }>();
+let channelID = "";
 
 onMounted(() => {
   getInstance(props.windowID).title = "Channel";
+  channelID = getInstance(props.windowID).arguments[0]
 
-  socket.emit("get_channel", JSON.stringify({ channel_id: "5513e0ea-c7c2-4718-b05a-a7107e137efb" }))
+  socket.emit("get_channel", JSON.stringify({ channel_id: channelID }))
 });
 
 interface Message
@@ -24,8 +26,6 @@ const messages = ref(Array<Message>());
 let message = ref("");
 
 socket.on("update_channel", (data: Array<Message>) => {
-  console.log(data)
-  
   data.forEach(message => {
     messages.value.push(message);
   })
@@ -34,7 +34,6 @@ socket.on("update_channel", (data: Array<Message>) => {
 
 function sendMessage()
 {
-
   message.value = "";
 }
 
@@ -55,7 +54,7 @@ function formatDate(dateString: string)
     returnString += `${date.toLocaleDateString()} at`
   }
 
-  return `${returnString} ${date.toLocaleTimeString()}`;
+  return `${returnString} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 }
 
 </script>

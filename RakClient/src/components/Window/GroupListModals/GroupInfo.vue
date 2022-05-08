@@ -69,9 +69,7 @@ function RequestGroupInfo()
 
 function openChannel(channelID: string)
 {
-  console.log(channelID)
-  
-  createWindow({componentPath: "ChannelView.vue", width: 420, height: 300});
+  createWindow({componentPath: "ChannelView.vue", width: 420, height: 300, arguments: [ channelID ]});
 }
 
 </script>

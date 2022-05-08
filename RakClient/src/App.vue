@@ -10,7 +10,6 @@ import { LoadCredentials } from "./Credentials";
 
 // Create account window if no credentials are found
 createWindow({componentPath: "AccountSetup.vue", width: 440, height: 340, closeable: false});
-createWindow({componentPath: "ChannelView.vue", width: 440, height: 340});
 
 </script>
 
