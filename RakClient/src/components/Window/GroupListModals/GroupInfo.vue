@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "@vue/runtime-core";
+import { onMounted, onUnmounted, ref, watch } from "@vue/runtime-core";
 import { Connected, SessionToken, socket } from "../../../API/ws-api";
 import { credentials } from "../../../Credentials";
+import { createWindow } from "../../../window-manager";
 import LoadingBar from "../../LoadingBar.vue";
 
 const props = defineProps<{ groupID: string }>();
+const emit = defineEmits(["goto"])
 let UpdateGroupInfoTimer: number;
 let loading = ref(false);
 let requested = false;
@@ -32,7 +34,6 @@ function UpdateGroup(data: GetGroupInfoResponse)
   GroupName.value = data.name;
   Channels.value = data.channels;
 
-
   loading.value = false;
   clearTimeout(requestedLoadingBar);
   requested = false;  
@@ -42,6 +43,10 @@ onMounted(() =>{
   UpdateGroupInfoTimer = setInterval(RequestGroupInfo, 2500, null);
   RequestGroupInfo();
 
+})
+
+watch(Connected, (newValue) =>{
+  if (!newValue) { emit("goto", 0) }
 })
 
 onUnmounted(() =>{
@@ -62,17 +67,25 @@ function RequestGroupInfo()
   requested = true;
 }
 
+function openChannel(channelID: string)
+{
+  console.log(channelID)
+  
+  createWindow({componentPath: "ChannelView.vue", width: 420, height: 300});
+}
+
 </script>
 
 <template>
   <div class="wrapper">
+    <LoadingBar :active="loading" :always_visible="true"></LoadingBar>
     <header>
+      <a class="back-arrow" @click="emit('goto', 0)"></a>
       <h1>{{GroupName}}</h1>
     </header>
-    <LoadingBar :active="loading" :always_visible="true"></LoadingBar>
 
     <ol>
-      <li v-for="channel in Channels" :key="channel.id" class="channel">
+      <li v-for="channel in Channels" :key="channel.id" class="channel" @click="openChannel(channel.id)">
         <p>{{channel.channelName}}</p>
       </li>
     </ol>
@@ -92,11 +105,34 @@ function RequestGroupInfo()
   right: 0;
 }
 
+.back-arrow
+{
+  --arrow-size: .2rem;
+  display: inline-block;
+  width: var(--arrow-size);
+  height: var(--arrow-size);
+  border: solid rgb(190, 190, 190);
+  border-width: 0 var(--arrow-size) var(--arrow-size) 0;
+  padding: var(--arrow-size);
+  box-sizing: border-box;
+  margin-left: 2px;
+  transform: rotate(135deg);
+}
+
+.back-arrow:hover
+{
+  border-color: white;
+}
+
+
 ol
 {
   display: flex;
   flex-direction: column;
   padding: .3rem;
+  gap: .3rem;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .channel
@@ -108,13 +144,25 @@ ol
   font-size: .8rem;
 }
 
+.channel:hover
+{
+  background: rgb(70, 72, 78);
+  cursor: pointer;
+}
+
 header
 {
   display: flex;
+  gap: .3rem;
   padding: .3rem;
   font-size: .6rem;
   background: rgba(56, 57, 66);
-  z-index: 1;
+  align-items: center;
+}
+
+.loading-bar
+{
+  z-index: 0.5;
 }
 
 h1

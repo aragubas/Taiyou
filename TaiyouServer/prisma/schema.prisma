@@ -66,8 +66,7 @@ model Channel {
   id          String @id @default(uuid())
   channelName String @unique
   Group       Group  @relation("channels", fields: [groupID], references: [id])
-  groupID     String @unique
-
+  groupID     String
 
   Messages Message[] @relation("messages")
 }

@@ -11,6 +11,7 @@ export class WindowInstance {
   minimized: boolean = false;
   resizable: boolean = true;
   closeable: boolean = true;
+  arguments: any[] = [];
   width: number = 400;
   height: number = 320;
   minWidth: number = 200;
@@ -46,16 +47,40 @@ export class WindowInstance {
 }
 
 interface WindowFactoryProperties {
+  /** Path of component (inside window folder) */
   componentPath: string;
+
+  /** Initial title of window (may be changed by window modal) */
   title?: string;
+
+  /** Enables/Disable resize handle */
   resizable?: boolean;
+  
+  /** Enables/Disable close button */
   closeable?: boolean;
+  
+  /** Initial width of the window (may be changed by window modal) */
   width?: number;
+  
+  /** Initial height of the window (may be changed by window modal) */
   height?: number;
+  
+  /** Initial minimum width of the window (may be changed by window modal) */
   minWidth?: number;
+  
+  /** Initial minimum height of the window (may be changed by window modal) */
   minHeight?: number;
+  
+  /** Optional arguments (accessible via getInstance().arguments) */
+  arguments?: any[];
+  
+  /** Event when closing the window */
   onClose?: () => void;
+  
+  /** Event when minimizing the window */
   onMinimize?: () => void;
+  
+  /** Event when restoring the window */
   onRestore?: () => void;
 }
 
@@ -101,6 +126,11 @@ export function createWindow(properties: WindowFactoryProperties): string {
 
   if (properties.closeable != undefined) {
     newWindow.closeable = properties.closeable;
+  }
+
+  if (properties.arguments != undefined)
+  {
+    newWindow.arguments = properties.arguments;
   }
 
   newWindow.componentPath = `./Window/${properties.componentPath}`;
