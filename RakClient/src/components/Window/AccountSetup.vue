@@ -6,7 +6,7 @@ import Login from "./AccountSetupModals/Login.vue";
 import Register from "./AccountSetupModals/Register.vue";
 import StartScreen from "./AccountSetupModals/StartScreen.vue";
 import Connect from "./AccountSetupModals/Connect.vue";
-import { si } from "../../API/ws-api";
+import { loginWindowClosed_setter } from "../../API/ws-api";
 const props = defineProps<{ windowID: string }>();
 
 let screenID = ref(0);
@@ -36,12 +36,12 @@ watch(backbutton_hidden, (newValue: boolean) =>{
 })
 
 onMounted(() => {
-  if (si(undefined)) 
+  if (loginWindowClosed_setter(undefined)) 
   { 
     alreadyCreated = true; 
   }
 
-  si(false);
+  loginWindowClosed_setter(false);
   
   getInstance(props.windowID).title = "Account Setup & Authentication";
   getInstance(props.windowID).resizable = false;
@@ -53,10 +53,10 @@ onMounted(() => {
     screenID.value = 3;
   }
 
-  if (alreadyCreated)
-  {
-    screenID.value = 1;
-  }
+  // if (alreadyCreated)
+  // {
+  //   screenID.value = 1;
+  // }
 });
 
 function goto(screenid: number)
@@ -71,7 +71,7 @@ function toggle_backbutton()
 
 function account_setup_complete()
 {
-  si(true);
+  loginWindowClosed_setter(true);
   
   destroyWindow(props.windowID);
   if (!alreadyCreated)

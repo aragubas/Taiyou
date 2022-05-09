@@ -1,16 +1,32 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "@vue/runtime-core";
 import { Connect, Connected, socket } from "../../../API/ws-api";
+import LoadingBar from "../../LoadingBar.vue";
 
 const emit = defineEmits(["toggle_backbutton", "goto", "setup_complete"])
 let loading = ref(true)
-let credentialError = ref(false)
+let Error = ref(false)
+let ErrorTitle = ref("")
+let ErrorMessage = ref("")
+let IsConnectionError = ref(false)
 
-function handleLoginError()
+function setError()
 {
   loading.value = false;
-  credentialError.value = true;
+  Error.value = true;
 }
+
+function connectionError()
+{
+  setError();
+  IsConnectionError.value = true;
+  ErrorTitle.value = "Connection Failed";
+  ErrorMessage.value = "Could not connect to the server. Please check your internet connection and try again.";
+}
+
+socket.on("connect_error", connectionError)
+socket.on("connect_failed", connectionError)
+
 
 watch(Connected, (newValue) => {
   if (newValue == true)
@@ -22,20 +38,30 @@ watch(Connected, (newValue) => {
 onMounted(() => {
   emit("toggle_backbutton");
 
-  socket.on("credential_error", handleLoginError)
+  socket.on("credential_error", setError)
   Connect();
 
 });
 
 onUnmounted(() => {
-  socket.off("credential_error", handleLoginError)
-
+  socket.off("credential_error", setError)
+  socket.off("connect_error", connectionError)
+  socket.off("connect_failed", connectionError)
 })
 
+function TryReconnect()
+{
+  loading.value = true;
+  Error.value = false;
+  IsConnectionError.value = false;
+
+  Connect();
+}
+
 const center_message = computed(() => {
-  if (credentialError.value == true)
+  if (Error.value == true)
   {
-    return "Login Error"
+    return ErrorTitle.value
   }
 
   return "Logging in..."
@@ -45,12 +71,14 @@ const center_message = computed(() => {
 
 <template>
   <div class="wrapper">
-    <span class="loading-bar" :class="[loading ? 'loading' : '']"></span>
+    <LoadingBar :active="loading"></LoadingBar>
+
     <div class="center">
       <h1>{{center_message}}</h1>
-      <p v-if="credentialError">Invalid credentials, please log in again</p>
+      <p v-if="Error">{{ErrorMessage}}</p>
 
-      <button v-if="credentialError" class="button" @click="emit('goto', 1)">Log In</button>
+      <button v-if="Error && !IsConnectionError" class="button" @click="emit('goto', 0)">Back</button>
+      <button v-if="Error && IsConnectionError" class="button" @click="TryReconnect()">Try Again</button>
     </div>
 
   </div>
@@ -79,46 +107,6 @@ const center_message = computed(() => {
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+  text-align: center;
 }
-
-.loading-bar
-{
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: .3rem;
-  background: rgba(70, 72, 84, 0.3);
-  opacity: 0;
-  transform: scaleY(0%);
-  transform-origin: top center;
-  transition: opacity .3s linear, transform .2s cubic-bezier(0.21, 0.53, 0.74, 0.51), box-shadow .2s linear;
-  overflow: hidden;
-}
-
-.loading-bar.loading
-{
-  opacity: 1;
-  transform: scaleY(100%);
-  box-shadow: 0px 0px 2px black;
-}
-
-.loading-bar.loading::before
-{
-  content: "";
-  animation: loading-anim 3s linear infinite;
-  background: rgb(90, 92, 98);
-  position: absolute;
-  width: 50%;
-  height: 100%;
-  left: -60%;
-  top: 0;
-}
-
-@keyframes loading-anim
-{
-  from { left: -60%; transform: scaleX(100%); }
-  to { left: 100%; transform: scaleX(50%); }
-}
-
 </style>
