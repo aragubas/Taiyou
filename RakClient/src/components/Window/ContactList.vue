@@ -4,7 +4,7 @@ import { defineProps, onMounted, onUnmounted, ref, Ref } from "@vue/runtime-core
 import { v4 } from "uuid";
 import { SessionToken, socket, Connected } from "../../API/ws-api";
 import LoadingBar from "../LoadingBar.vue";
-import Disconnected from "../Overlays/Disconnected.vue";
+import ErrorOverlay from "../Overlays/ErrorOverlay.vue";
 const props = defineProps<{ windowID: string }>();
 
 let UpdateUsersTimer: number;
@@ -98,7 +98,7 @@ function RequestContactList()
   <div class="wrapper">
     <LoadingBar :active="loading" :always_visible="true" v-if="Connected"></LoadingBar>
 
-    <Disconnected v-if="!Connected"></Disconnected>
+    <ErrorOverlay v-if="!Connected" :message="'Disconnected'"></ErrorOverlay>
 
     <ol v-if="Connected">
       <li v-for="contact in contacts" :key="contact.id" class="contact">

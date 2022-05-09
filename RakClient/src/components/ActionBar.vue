@@ -192,6 +192,7 @@ function toggleNotifications() {
   left: -12rem;
   opacity: 0.3;
 }
+
 .autohide:hover {
   transition-delay: 0.1s;
   left: 0px;

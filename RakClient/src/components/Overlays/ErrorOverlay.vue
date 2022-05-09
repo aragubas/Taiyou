@@ -1,7 +1,11 @@
+<script setup lang="ts">
+const properties = defineProps<{ message: string }>();
+</script>
+
 <template>
   <div class="wrapper">
     <h1>&#128473;</h1>
-    <p>Disconnected</p>
+    <p>{{ properties.message }}</p>
   </div>
 </template>
 

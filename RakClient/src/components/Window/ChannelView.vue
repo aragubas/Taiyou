@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onActivated, onMounted, ref } from "@vue/runtime-core";
 import { socket } from "../../API/ws-api";
+import { credentials } from "../../Credentials";
 import { getInstance } from "../../window-manager";
 
 const props = defineProps<{ windowID: string }>();
@@ -9,6 +10,11 @@ let channelID = "";
 onMounted(() => {
   getInstance(props.windowID).title = "Channel";
   channelID = getInstance(props.windowID).arguments[0]
+
+  socket.on(`new_message:${channelID}`, (data: Message) => {
+    messages.value = [ data, ...messages.value ];
+  })
+
 
   socket.emit("get_channel", JSON.stringify({ channel_id: channelID }))
 });
@@ -34,6 +40,7 @@ socket.on("update_channel", (data: Array<Message>) => {
 
 function sendMessage()
 {
+  socket.emit("send_message", JSON.stringify({ session_token: credentials.value.session_token, channel_id: channelID, content: message.value }))
   message.value = "";
 }
 
@@ -88,8 +95,16 @@ function formatDate(dateString: string)
 {
   display: flex;
   flex-direction: column;
-  gap: .3rem;
+  gap: .1rem;
+  padding: .3rem;
+  border-radius: 4px;
 }
+
+.message:hover
+{
+  background: rgb(60, 62, 68);
+}
+
 
 .message h1
 {

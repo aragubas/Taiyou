@@ -70,6 +70,13 @@ interface WsClientGetChannelMessages
   channel_id: string;
 }
 
+interface WsClientSendMessage
+{
+  session_token: string;
+  channel_id: string;
+  content: string;
+}
+
 interface WsClientGetGroupInfo
 {
   session_token: string;
@@ -135,12 +142,30 @@ socketApp.on("connection", async (client: Socket) => {
     client.emit("update_friend_list", friends)
   })  
 
+  // return all channel messages
   client.on("get_channel", async (data: any) => {
     const request = JSON.parse(data) as WsClientGetChannelMessages;
 
-    const channelMessages = await prisma.message.findMany({ where: { channelID: request.channel_id } })
+    const channelMessages = await prisma.message.findMany({ where: { channelID: request.channel_id }, orderBy: { date: "desc" } });
 
     client.emit("update_channel", channelMessages);
+  })
+
+  client.on("send_message", async (data: any) => {
+    const request = JSON.parse(data) as WsClientSendMessage;
+
+    if (request.content.trim().length == 0) { return; }
+
+    // Get UserID from token and check if session token is still valid
+    const userID = await WsUserIDFromSessionToken(request.session_token);
+    if (userID == null) { client.emit("credential_error"); client.disconnect(); return; }
+
+    const user = await prisma.user.findUnique({ where: { id: userID } })
+    if (user == null) { client.emit("credential_error"); client.disconnect(); return; }
+    
+    const newMessage = await prisma.message.create({ data: { channelID: request.channel_id, content: request.content, ownerUsername: user.username } })
+    
+    socketApp.emit(`new_message:${request.channel_id}`, newMessage);
   })
 
   client.on("get_group_info", async (data: any) =>{

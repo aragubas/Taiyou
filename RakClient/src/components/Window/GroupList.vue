@@ -5,8 +5,8 @@ import { destroyWindow, getInstance } from "../../window-manager";
 import GroupList from "./GroupListModals/GroupList.vue";
 import GroupInfo from "./GroupListModals/GroupInfo.vue";
 const props = defineProps<{ windowID: string }>();
-let screenID = ref(1);
-let groupViewID = ref("17c30d4a-80ba-4be5-8503-25545eafe604")
+let screenID = ref(0);
+let groupViewID = ref("")
 
 onMounted(() => {
   getInstance(props.windowID).title = "Groups";

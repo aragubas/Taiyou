@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, ref, watch } from "@vue/runtime-dom";
 import { SessionToken, socket, Connected } from "../../../API/ws-api";
 import LoadingBar from "../../LoadingBar.vue";
-import Disconnected from "../../Overlays/Disconnected.vue";
+import ErrorOverlay from "../../Overlays/ErrorOverlay.vue";
 
 let UpdateGroupsTimer: number;
 let loading = ref(false);
@@ -99,7 +99,7 @@ function viewGroup(groupID: string)
   <div class="wrapper">
       <LoadingBar :active="loading" :always_visible="true" v-if="Connected"></LoadingBar>
 
-      <Disconnected v-if="!Connected"></Disconnected>
+      <ErrorOverlay v-if="!Connected" :message="'Disconnected'"></ErrorOverlay>
 
       <ul v-if="Connected">
         <li v-for="group in groups" :key="group.id" class="group" @click="viewGroup(group.id)">
