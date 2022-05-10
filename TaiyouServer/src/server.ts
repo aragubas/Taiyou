@@ -70,6 +70,13 @@ interface WsClientGetChannelMessages
   channel_id: string;
 }
 
+interface WsClientGetChannelOlderMessages
+{
+  session_token: string;
+  channel_id: string;
+  lastMessageID: string;
+}
+
 interface WsClientSendMessage
 {
   session_token: string;
@@ -146,8 +153,24 @@ socketApp.on("connection", async (client: Socket) => {
   client.on("get_channel", async (data: any) => {
     const request = JSON.parse(data) as WsClientGetChannelMessages;
 
-    const channelMessages = await prisma.message.findMany({ where: { channelID: request.channel_id }, orderBy: { date: "desc" } });
+    const channelMessages = await prisma.message.findMany({ where: { channelID: request.channel_id }, orderBy: { date: "desc" }, take: 20 });
 
+    client.emit("update_channel", channelMessages);
+  })
+
+  client.on("get_channel_older", async (data: any) => {
+    const request = JSON.parse(data) as WsClientGetChannelOlderMessages;
+
+    console.log(request.lastMessageID)
+    const lastMessage = await prisma.message.findFirst({ 
+      where: { channelID: request.channel_id, id: request.lastMessageID },
+      orderBy: { date: "desc" }
+      
+    
+    })
+
+    const channelMessages = await prisma.message.findMany({ where: { channelID: request.channel_id }, orderBy: { date: "desc" }, take: 20, cursor: { id: request.lastMessageID } });
+    
     client.emit("update_channel", channelMessages);
   })
 

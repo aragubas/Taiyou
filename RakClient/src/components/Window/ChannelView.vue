@@ -1,22 +1,23 @@
 <script setup lang="ts">
 import { onActivated, onMounted, ref } from "@vue/runtime-core";
+import { watch } from "vue";
 import { socket } from "../../API/ws-api";
 import { credentials } from "../../Credentials";
 import { getInstance } from "../../window-manager";
 
 const props = defineProps<{ windowID: string }>();
-let channelID = "";
+let channelID = ref("");
 
 onMounted(() => {
   getInstance(props.windowID).title = "Channel";
-  channelID = getInstance(props.windowID).arguments[0]
+  channelID.value = getInstance(props.windowID).arguments[0]
 
-  socket.on(`new_message:${channelID}`, (data: Message) => {
+  socket.on(`new_message:${channelID.value}`, (data: Message) => {
     messages.value = [ data, ...messages.value ];
   })
 
 
-  socket.emit("get_channel", JSON.stringify({ channel_id: channelID }))
+  socket.emit("get_channel", JSON.stringify({ channel_id: channelID.value }))
 });
 
 interface Message
@@ -31,6 +32,10 @@ interface Message
 const messages = ref(Array<Message>());
 let message = ref("");
 
+watch(messages, (newValue: Array<Message>) => {
+  if (newValue.length > 20) { newValue = newValue.splice(20) }
+})
+
 socket.on("update_channel", (data: Array<Message>) => {
   data.forEach(message => {
     messages.value.push(message);
@@ -40,7 +45,7 @@ socket.on("update_channel", (data: Array<Message>) => {
 
 function sendMessage()
 {
-  socket.emit("send_message", JSON.stringify({ session_token: credentials.value.session_token, channel_id: channelID, content: message.value }))
+  socket.emit("send_message", JSON.stringify({ session_token: credentials.value.session_token, channel_id: channelID.value, content: message.value }))
   message.value = "";
 }
 
@@ -64,13 +69,30 @@ function formatDate(dateString: string)
   return `${returnString} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 }
 
+function handleScroll(event: Event)
+{
+  const element = event.target as HTMLElement;
+  // console.log(element.scrollHeight);
+  // console.log(element.getBoundingClientRect());
+  const isOnTop = element.clientHeight / element.getBoundingClientRect().bottom <= Math.abs(element.scrollTop / (element.scrollHeight - element.clientHeight));
+  const isOnBottom = Math.abs(element.scrollTop) <= 16;
+  const firstMessage = messages.value[0];
+  const lastMessage = messages.value[messages.value.length - 1];
+
+  if (isOnTop && firstMessage != undefined)
+  {
+    socket.emit("get_channel_older", JSON.stringify({ channel_id: channelID.value, lastMessageID: lastMessage.id }));
+  }
+
+}
+
 </script>
 
 <template>
   <main>
     <div class="wrapper">
       <div class="grid">
-        <ol>
+        <ol :id="`channelview-${channelID}`" @scroll="handleScroll">
           <li v-for="message in messages" :key="message.id" class="message">
             <header>
               <h1>{{ message.ownerUsername }}</h1>
