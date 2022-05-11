@@ -143,12 +143,12 @@ socketApp.on("connection", async (client: Socket) => {
   })  
 
   // return all channel messages
-  client.on("get_channel", async (data: any) => {
+  client.on("get_channel", async (data: any, callback: any) => {
     const request = JSON.parse(data) as WsClientGetChannelMessages;
 
     const channelMessages = await prisma.message.findMany({ where: { channelID: request.channel_id }, orderBy: { date: "desc" }, take: 20 });
 
-    client.emit("update_channel", channelMessages);
+    callback(channelMessages);
   })
 
   client.on("get_channel_older", async (data: any, callback: any) => {

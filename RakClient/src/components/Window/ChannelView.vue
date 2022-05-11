@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onActivated, onMounted, ref } from "@vue/runtime-core";
+import { onActivated, onMounted, onUnmounted, ref } from "@vue/runtime-core";
 import { watch } from "vue";
 import { socket } from "../../API/ws-api";
 import { credentials } from "../../Credentials";
@@ -7,7 +7,7 @@ import { getInstance } from "../../window-manager";
 import { VueEternalLoading, LoadAction } from '@ts-pro/vue-eternal-loading';
 
 const props = defineProps<{ windowID: string }>();
-let channelID = ref("");
+let channelID = "";
 let firstMessageLoaded = ref(false);
 let initialChannelRequest = ref(false);
 let channelName = ref("");
@@ -16,19 +16,21 @@ let parentGroupName = ref("");
 
 onMounted(() => {  
   const windowArguments = getInstance(props.windowID)!.arguments;
-  channelID.value = windowArguments[0];
+  channelID = windowArguments[0];
   channelName.value = windowArguments[1];
   parentGroupName.value = windowArguments[2];
 
   getInstance(props.windowID)!.title = `Channel ${channelName.value} in ${parentGroupName.value}`;
 
-  socket.on(`new_message:${channelID.value}`, (data: Message) => {
-    messages.value = [ data, ...messages.value ];
-  })
+  socket.on(`new_message:${channelID}`, NewMessageCallback)
 
-
-  socket.emit("get_channel", JSON.stringify({ channel_id: channelID.value }))
+  socket.emit("get_channel", JSON.stringify({ channel_id: channelID }), UpdateChannelCallback)
 });
+
+onUnmounted(() => {
+  socket.off(`new_message:${channelID}`, NewMessageCallback)
+
+})
 
 interface Message
 {
@@ -42,21 +44,30 @@ interface Message
 const messages = ref(Array<Message>());
 let message = ref("");
 
-watch(messages, (newValue: Array<Message>) => {
-  if (newValue.length > 20) { newValue = newValue.splice(20) }
-})
+// watch(messages, (newValue: Array<Message>) => {
+//   if (newValue.length > 20) { newValue = newValue.splice(20) }
+// })
 
-socket.on("update_channel", (data: Array<Message>) => {
+function NewMessageCallback(data: Message)
+{
+  messages.value = [ data, ...messages.value ];
+}
+
+function UpdateChannelCallback(data: Array<Message>)
+{
+  console.log("Update Channel")
+
   data.forEach(message => {
     addMessage(message);
   })
 
   if (!initialChannelRequest.value) { initialChannelRequest.value = true; }
-});
+
+}
 
 function sendMessage()
 {
-  socket.emit("send_message", JSON.stringify({ channel_id: channelID.value, content: message.value }))
+  socket.emit("send_message", JSON.stringify({ channel_id: channelID, content: message.value }))
   message.value = "";
 }
 
@@ -97,7 +108,7 @@ function ceira({loaded}: LoadAction)
   if (messages.value.length < 1 || firstMessageLoaded.value == true) { return; }
 
   let newlyloadedMessages = 0;
-  socket.emit("get_channel_older", JSON.stringify({ channel_id: channelID.value, lastMessageID: messages.value[messages.value.length -1].id }), (response: Array<Message> | null) => {
+  socket.emit("get_channel_older", JSON.stringify({ channel_id: channelID, lastMessageID: messages.value[messages.value.length -1].id }), (response: Array<Message> | null) => {
     if (response == null) { return; }
     response.forEach(message => {
       if (addMessage(message))
