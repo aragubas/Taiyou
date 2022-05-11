@@ -87,7 +87,6 @@ function addMessage(message: Message): boolean
 
 function ceira({loaded}: LoadAction)
 {
-  console.log("ceirafunc")
   if (messages.value.length < 1 || firstMessageLoaded.value == true) { return; }
 
   let newlyloadedMessages = 0;
@@ -105,7 +104,7 @@ function ceira({loaded}: LoadAction)
     { 
       console.log(`First message loaded`)
       firstMessageLoaded.value = true; 
-      setTimeout(() => { firstMessageLoaded.value = false }, 4000);
+      setTimeout(() => { firstMessageLoaded.value = false }, 42000);
     }
 
     loaded()
@@ -126,10 +125,27 @@ function ceira({loaded}: LoadAction)
                 <p>{{ formatDate(message.date) }}</p>
               </header>
               <p>{{message.content}}</p>
-            </li> 
+            </li>
+
+            <div v-if="firstMessageLoaded" class="first-message-header">
+              <h1>-- This is the start of this channel --</h1>
+            </div>
           </ol>
           
-          <vue-eternal-loading v-if="initialChannelRequest" :load="ceira"></vue-eternal-loading>
+          <vue-eternal-loading v-if="initialChannelRequest && !firstMessageLoaded" :load="ceira">
+            <template #loading>
+              <div class="loading-dots">
+                <span v-for="(char, i) in '...'" :key="i" :style="{ 'animation-delay': `${(i * 60).toString()}ms` }">
+                  {{char}}
+                </span>
+              </div>
+              <!-- <div class="loading-dots">
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+              </div> -->
+            </template>
+          </vue-eternal-loading>
         </div>
 
 
@@ -143,6 +159,29 @@ function ceira({loaded}: LoadAction)
 </template>
 
 <style scoped>
+
+@keyframes loading_dots_anim
+{
+  0% { opacity: 1; transform: translateY(10%); }
+  50% { opacity: 0; transform: translateY(0%); }
+  100% { opacity: 1; transform: translateY(10%); }
+}
+
+.loading-dots
+{
+  user-select: none;
+  display: flex;
+  justify-content: center;
+}
+
+.loading-dots span
+{
+  animation-name: loading_dots_anim;
+  animation-iteration-count: infinite;
+  animation-duration: 1s;
+  animation-timing-function: linear;
+  font-size: 1.5rem;
+}
 
 .message
 {
@@ -158,6 +197,18 @@ function ceira({loaded}: LoadAction)
   background: rgb(60, 62, 68);
 }
 
+.first-message-header
+{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.first-message-header h1
+{
+  font-size: .8rem;
+  font-weight: normal;
+}
 
 .message h1
 {
