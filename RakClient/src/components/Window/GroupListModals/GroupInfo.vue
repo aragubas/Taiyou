@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from "@vue/runtime-core";
-import { Connected, SessionToken, socket } from "../../../API/ws-api";
+import { Connected, socket } from "../../../API/ws-api";
 import { credentials } from "../../../Credentials";
 import { createWindow } from "../../../window-manager";
 import LoadingBar from "../../LoadingBar.vue";
@@ -69,7 +69,12 @@ function RequestGroupInfo()
 
 function openChannel(channelID: string)
 {
-  createWindow({componentPath: "ChannelView.vue", width: 420, height: 300, arguments: [ channelID ]});
+  createWindow({componentPath: "ChannelView.vue", width: 420, height: 300, arguments: 
+  [ 
+    channelID, 
+    Channels.value.find(channel => channel.id == channelID)?.channelName, 
+    GroupName.value
+  ]});
 }
 
 </script>

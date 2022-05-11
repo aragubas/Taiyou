@@ -10,10 +10,17 @@ const props = defineProps<{ windowID: string }>();
 let channelID = ref("");
 let firstMessageLoaded = ref(false);
 let initialChannelRequest = ref(false);
+let channelName = ref("");
+let parentGroupName = ref("");
 
-onMounted(() => {
-  getInstance(props.windowID)!.title = "Channel";
-  channelID.value = getInstance(props.windowID)!.arguments[0]
+
+onMounted(() => {  
+  const windowArguments = getInstance(props.windowID)!.arguments;
+  channelID.value = windowArguments[0];
+  channelName.value = windowArguments[1];
+  parentGroupName.value = windowArguments[2];
+
+  getInstance(props.windowID)!.title = `Channel ${channelName.value} in ${parentGroupName.value}`;
 
   socket.on(`new_message:${channelID.value}`, (data: Message) => {
     messages.value = [ data, ...messages.value ];
@@ -35,13 +42,13 @@ interface Message
 const messages = ref(Array<Message>());
 let message = ref("");
 
-// watch(messages, (newValue: Array<Message>) => {
-//   if (newValue.length > 20) { newValue = newValue.splice(20) }
-// })
+watch(messages, (newValue: Array<Message>) => {
+  if (newValue.length > 20) { newValue = newValue.splice(20) }
+})
 
 socket.on("update_channel", (data: Array<Message>) => {
   data.forEach(message => {
-    messages.value.push(message);
+    addMessage(message);
   })
 
   if (!initialChannelRequest.value) { initialChannelRequest.value = true; }
