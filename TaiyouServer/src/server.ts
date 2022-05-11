@@ -154,23 +154,11 @@ socketApp.on("connection", async (client: Socket) => {
   client.on("get_channel_older", async (data: any, callback: any) => {
     const request = JSON.parse(data) as WsClientGetChannelOlderMessages;
 
-    const lastMessage = await prisma.message.findFirst({ 
-      where: { channelID: request.channel_id }, 
-      orderBy: { date: "desc" }, 
-      take: 20, 
-      cursor: { id: request.lastMessageID } 
-    })
-
-    if (lastMessage?.id == request.lastMessageID)
-    {
-      callback(null);
-      return;
-    }
-
     const channelMessages = await prisma.message.findMany({ 
       where: { channelID: request.channel_id }, 
       orderBy: { date: "desc" }, 
       take: 20, 
+      skip: 1,
       cursor: { id: request.lastMessageID } 
     });
     

@@ -4,9 +4,12 @@ import { watch } from "vue";
 import { socket } from "../../API/ws-api";
 import { credentials } from "../../Credentials";
 import { getInstance } from "../../window-manager";
+import { VueEternalLoading, LoadAction } from '@ts-pro/vue-eternal-loading';
 
 const props = defineProps<{ windowID: string }>();
 let channelID = ref("");
+let firstMessageLoaded = ref(false);
+let initialChannelRequest = ref(false);
 
 onMounted(() => {
   getInstance(props.windowID)!.title = "Channel";
@@ -32,14 +35,16 @@ interface Message
 const messages = ref(Array<Message>());
 let message = ref("");
 
-watch(messages, (newValue: Array<Message>) => {
-  if (newValue.length > 20) { newValue = newValue.splice(20) }
-})
+// watch(messages, (newValue: Array<Message>) => {
+//   if (newValue.length > 20) { newValue = newValue.splice(20) }
+// })
 
 socket.on("update_channel", (data: Array<Message>) => {
   data.forEach(message => {
     messages.value.push(message);
   })
+
+  if (!initialChannelRequest.value) { initialChannelRequest.value = true; }
 });
 
 function sendMessage()
@@ -68,27 +73,43 @@ function formatDate(dateString: string)
   return `${returnString} ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 }
 
-function handleScroll(event: Event)
+function addMessage(message: Message): boolean
 {
-  const element = event.target as HTMLElement;
-  // console.log(element.scrollHeight);
-  // console.log(element.getBoundingClientRect());
-  const isOnTop = element.clientHeight / element.getBoundingClientRect().bottom <= Math.abs(element.scrollTop / (element.scrollHeight - element.clientHeight));
-  const isOnBottom = Math.abs(element.scrollTop) <= 16;
-  const firstMessage = messages.value[0];
-  const lastMessage = messages.value[messages.value.length - 1];
-
-  if (isOnTop && firstMessage != undefined)
+  if (messages.value.filter(msg => msg.id == message.id).length >= 1)
   {
-    socket.emit("get_channel_older", JSON.stringify({ channel_id: channelID.value, lastMessageID: lastMessage.id }), (response: Array<Message> | null) => {
-      if (response == null) { return; }
-      response.forEach(message => {
-        messages.value.push(message);
-      })
-
-    });
+    console.log("Message already exists");
+    return false;
   }
+  messages.value.push(message);
 
+  return true;
+}
+
+function ceira({loaded}: LoadAction)
+{
+  console.log("ceirafunc")
+  if (messages.value.length < 1 || firstMessageLoaded.value == true) { return; }
+
+  let newlyloadedMessages = 0;
+  socket.emit("get_channel_older", JSON.stringify({ channel_id: channelID.value, lastMessageID: messages.value[messages.value.length -1].id }), (response: Array<Message> | null) => {
+    if (response == null) { return; }
+    response.forEach(message => {
+      if (addMessage(message))
+      {
+        newlyloadedMessages++;
+      }
+    })
+
+    console.log(`Loading new messages ${newlyloadedMessages}`)
+    if (newlyloadedMessages == 0) 
+    { 
+      console.log(`First message loaded`)
+      firstMessageLoaded.value = true; 
+      setTimeout(() => { firstMessageLoaded.value = false }, 4000);
+    }
+
+    loaded()
+  });
 }
 
 </script>
@@ -97,15 +118,20 @@ function handleScroll(event: Event)
   <main>
     <div class="wrapper">
       <div class="grid">
-        <ol :id="`channelview-${channelID}`" @scroll="handleScroll">
-          <li v-for="message in messages" :key="message.id" class="message">
-            <header>
-              <h1>{{ message.ownerUsername }}</h1>
-              <p>{{ formatDate(message.date) }}</p>
-            </header>
-            <p>{{message.content}}</p>
-          </li>
-        </ol>
+        <div class="scrollable">
+          <ol :id="`channelview-${channelID}`">
+            <li v-for="message in messages" :key="message.id" class="message">
+              <header>
+                <h1>{{ message.ownerUsername }}</h1>
+                <p>{{ formatDate(message.date) }}</p>
+              </header>
+              <p>{{message.content}}</p>
+            </li> 
+          </ol>
+          
+          <vue-eternal-loading v-if="initialChannelRequest" :load="ceira"></vue-eternal-loading>
+        </div>
+
 
         <div class="chat-controls">
           <input type="text" v-model="message" @keyup.enter="sendMessage" />
@@ -158,10 +184,16 @@ ol
 {
   display: flex;
   flex-direction: column-reverse;
-  overflow-y: scroll;
-  margin-bottom: .5rem;
   gap: .5rem;
   padding: .3rem;
+}
+
+.scrollable
+{
+  overflow-y: scroll;
+  margin-bottom: .5rem;
+  display: flex;
+  flex-direction: column-reverse;
 }
 
 .chat-controls

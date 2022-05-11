@@ -61,10 +61,10 @@ function goto(newScreenID: number)
 
 .v-enter-active,
 .v-leave-active {
-  transition: transform .5s ease, opacity .5s ease;
+  transition: transform .3s ease, opacity .3s ease;
   will-change: transform, opacity;
 }
-
+ 
 .v-leave-from {
   transform: translateX(0%);
   opacity: 100%;

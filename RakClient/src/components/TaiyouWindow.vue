@@ -181,9 +181,9 @@ const windowInstance = computed(() => {
       windowInstance.minimized ? 'minimized' : '',
     ]"
     @mousedown="focus"
-  >
+  > 
     <header>
-      <div class="window-header" @mousedown="moveMouseDown" @mouseup="moveMouseUp" >
+      <div class="window-header" @mousedown="moveMouseDown" @mouseup="moveMouseUp">
         <div class="window-actions">
           <a class="window-button" name="close" @click="destroyWindow(props.windowID)" v-if="windowInstance.closeable"></a>
 
