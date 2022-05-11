@@ -29,7 +29,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   socket.off(`new_message:${channelID}`, NewMessageCallback)
-
 })
 
 interface Message
