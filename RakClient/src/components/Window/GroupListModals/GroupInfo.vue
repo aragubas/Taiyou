@@ -59,7 +59,7 @@ function RequestGroupInfo()
   if (Connected.value == false) { requested = false; return; }
   if (requested == true) { return; }
   
-  socket.emit("get_group_info", JSON.stringify({ session_token: credentials.value.session_token, group_id: props.groupID }));
+  socket.emit("get_group_info", JSON.stringify({ group_id: props.groupID }));
 
   // Wait 500ms after showing the loading bar
   requestedLoadingBar = setTimeout(() => { if(!requested) { return; } loading.value = true; }, 500, null);

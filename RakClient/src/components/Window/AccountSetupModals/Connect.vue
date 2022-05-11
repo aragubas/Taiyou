@@ -5,29 +5,57 @@ import LoadingBar from "../../LoadingBar.vue";
 
 const emit = defineEmits(["toggle_backbutton", "goto", "setup_complete"])
 let loading = ref(true)
-let Error = ref(false)
-let ErrorTitle = ref("")
-let ErrorMessage = ref("")
-let IsConnectionError = ref(false)
+let error = ref(false)
+let errorTitle = ref("")
+let errorMessage = ref("")
+let isConnectionError = ref(false)
 
 function setError()
 {
   loading.value = false;
-  Error.value = true;
+  error.value = true;
 }
 
 function connectionError()
 {
   setError();
-  IsConnectionError.value = true;
-  ErrorTitle.value = "Connection Failed";
-  ErrorMessage.value = "Could not connect to the server. Please check your internet connection and try again.";
+  isConnectionError.value = true;
+  errorTitle.value = "Connection Failed";
+  errorMessage.value = "Could not connect to the server. Please check your internet connection and try again.";
 }
 
-socket.on("connect_error", connectionError)
+function connectError(data?: any)
+{
+  if (data instanceof Error)
+  {
+    const message = (data as Error).message;
+
+    switch (message)
+    {
+      case "credential_error":
+        credentialError();
+        return;
+    }
+  }
+
+  connectionError();
+}
+
+function credentialError()
+{
+  setError();
+  isConnectionError.value = false;
+  errorTitle.value = "Authentication Failed";
+  errorMessage.value = "Could not log in. Please log-in again.";
+}
+
+// Register events to main socket
+socket.on("connect_error", connectError)
 socket.on("connect_failed", connectionError)
+socket.on("credential_error", credentialError)
+socket.on("disconnect", connectionError)
 
-
+// Calls setup_complete when successfully connected
 watch(Connected, (newValue) => {
   if (newValue == true)
   {
@@ -38,13 +66,11 @@ watch(Connected, (newValue) => {
 onMounted(() => {
   emit("toggle_backbutton");
 
-  socket.on("credential_error", setError)
   Connect();
-
 });
 
 onUnmounted(() => {
-  socket.off("credential_error", setError)
+  socket.off("credential_error", credentialError)
   socket.off("connect_error", connectionError)
   socket.off("connect_failed", connectionError)
 })
@@ -52,16 +78,16 @@ onUnmounted(() => {
 function TryReconnect()
 {
   loading.value = true;
-  Error.value = false;
-  IsConnectionError.value = false;
+  error.value = false;
+  isConnectionError.value = false;
 
   Connect();
 }
 
 const center_message = computed(() => {
-  if (Error.value == true)
+  if (error.value == true)
   {
-    return ErrorTitle.value
+    return errorTitle.value
   }
 
   return "Logging in..."
@@ -75,10 +101,10 @@ const center_message = computed(() => {
 
     <div class="center">
       <h1>{{center_message}}</h1>
-      <p v-if="Error">{{ErrorMessage}}</p>
+      <p v-if="error">{{errorMessage}}</p>
 
-      <button v-if="Error && !IsConnectionError" class="button" @click="emit('goto', 0)">Back</button>
-      <button v-if="Error && IsConnectionError" class="button" @click="TryReconnect()">Try Again</button>
+      <button v-if="error && !isConnectionError" class="button" @click="emit('goto', 0)">Back</button>
+      <button v-if="error && isConnectionError" class="button" @click="TryReconnect()">Try Again</button>
     </div>
 
   </div>

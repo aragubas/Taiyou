@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from "@vue/runtime-dom";
-import { SessionToken, socket, Connected } from "../../../API/ws-api";
+import { socket, Connected } from "../../../API/ws-api";
 import LoadingBar from "../../LoadingBar.vue";
 import ErrorOverlay from "../../Overlays/ErrorOverlay.vue";
 
@@ -65,7 +65,7 @@ function RequestGroupList()
   if (Connected.value == false) { requested = false; return; }
   if (requested == true) { return; }
   
-  socket.emit("get_groups", SessionToken());
+  socket.emit("get_groups");
 
   // Wait 500ms after showing the loading bar
   requestedLoadingBar = setTimeout(() => { if(!requested) { return; } loading.value = true; }, 500, null);

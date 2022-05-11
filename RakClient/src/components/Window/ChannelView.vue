@@ -40,12 +40,11 @@ socket.on("update_channel", (data: Array<Message>) => {
   data.forEach(message => {
     messages.value.push(message);
   })
-
 });
 
 function sendMessage()
 {
-  socket.emit("send_message", JSON.stringify({ session_token: credentials.value.session_token, channel_id: channelID.value, content: message.value }))
+  socket.emit("send_message", JSON.stringify({ channel_id: channelID.value, content: message.value }))
   message.value = "";
 }
 
@@ -81,7 +80,13 @@ function handleScroll(event: Event)
 
   if (isOnTop && firstMessage != undefined)
   {
-    socket.emit("get_channel_older", JSON.stringify({ channel_id: channelID.value, lastMessageID: lastMessage.id }));
+    socket.emit("get_channel_older", JSON.stringify({ channel_id: channelID.value, lastMessageID: lastMessage.id }), (response: Array<Message> | null) => {
+      if (response == null) { return; }
+      response.forEach(message => {
+        messages.value.push(message);
+      })
+
+    });
   }
 
 }

@@ -2,7 +2,7 @@
 import { createWindow, getInstance } from "../../window-manager";
 import { defineProps, onMounted, onUnmounted, ref, Ref } from "@vue/runtime-core";
 import { v4 } from "uuid";
-import { SessionToken, socket, Connected } from "../../API/ws-api";
+import { socket, Connected } from "../../API/ws-api";
 import LoadingBar from "../LoadingBar.vue";
 import ErrorOverlay from "../Overlays/ErrorOverlay.vue";
 const props = defineProps<{ windowID: string }>();
@@ -84,7 +84,7 @@ function RequestContactList()
   if (Connected.value == false) { requested = false; return; }
   if (requested == true) { return; }
 
-  socket.emit("get_friend_list", SessionToken());
+  socket.emit("get_friend_list");
 
   requestedLoadingBar = setTimeout(() => { if(!requested) { return; } loading.value = true; }, 500, null);
  

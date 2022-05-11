@@ -1,10 +1,10 @@
 import { ref } from "@vue/runtime-dom";
-import { Manager, Socket } from "socket.io-client";
+import { Manager, Socket, io } from "socket.io-client";
 import { credentials, LoadCredentials } from "../Credentials";
 import { CloseAllWindows, createWindow, getInstance } from "../window-manager";
 
 export const manager = new Manager("http://localhost:3313", { autoConnect: false, reconnection: false });
-export const socket: Socket = manager.socket("/");
+export let socket: Socket = manager.socket("/");
 
 let loginWindowClosed: boolean = false;
 export function loginWindowClosed_setter(newValue: boolean | undefined ): boolean
@@ -14,35 +14,52 @@ export function loginWindowClosed_setter(newValue: boolean | undefined ): boolea
 }
 
 export const Connected = ref(false)
-export function SessionToken() { return { session_token: credentials.value.session_token } }
 
 export function Connect()
 {
   console.log("Connecting...");
   LoadCredentials();
+  
+  socket.disconnect(); // Makes sure that the socket is disconnected before connecting again
+  socket.io.opts.extraHeaders = { "x-auth-token": credentials.value.session_token };
 
   socket.connect();
 
-  socket.emit("authenticate", SessionToken())
+  socket.emit("authenticate")
 }
 
-function Disconnected()
+function Disconnected(data?: any)
 {
   if (socket.connected) { socket.disconnect(); }
   Connected.value = false
   credentials.value.logged_in = false;
 
+  // Parsers error type for logging
+  if (data instanceof Error)
+  {
+    const message = (data as Error).message;
+
+    switch (message)
+    {
+      case "credential_error":
+        console.log("[ws-api]: Connect error due to credential errors.")
+        break;
+    }
+  } else
+  {
+    console.log("[ws-api]: Disconnected!")
+  }
+
   if (loginWindowClosed)
   {
     createWindow({componentPath: "AccountSetup.vue", width: 440, height: 340, closeable: false});
   }
-  console.log("Disconnected!")
 }
 
 function handleCredentialsError()
 {
   Disconnected();
-  console.log("Credentials error")
+  console.log("[ws-api]: Runtime Credentials error")
 }
 
 function handleAuthSuccess()
@@ -50,11 +67,11 @@ function handleAuthSuccess()
   Connected.value = true;
   credentials.value.logged_in = true;
 
-  console.log("Successfully authenticated");
+  console.log("[ws-api]: Successfully authenticated");
 }
 
-socket.on("credential_error", handleCredentialsError);
 socket.on("auth_success", handleAuthSuccess);
+socket.on("credential_error", handleCredentialsError);
 socket.on("disconnect", Disconnected);
 socket.on("connect_error", Disconnected);
 socket.on("connect_failed", Disconnected);

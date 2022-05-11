@@ -1,4 +1,4 @@
-import { Socket, Server, Namespace } from 'socket.io';
+import { Socket, Server } from 'socket.io';
 import { v4 } from "uuid";
 import express from 'express';
 import Cors from './Middleware/Express/Cors';
@@ -27,18 +27,6 @@ expressApp.use(Cors);
 // User Router
 expressApp.use("/user", UserRouter);
 
-
-class ConnectedClient
-{
-  session_token: string | null = null;
-  socket: Socket
-
-  constructor(socket: Socket)
-  {
-    this.socket = socket;
-  }
-}
-
 interface ChannelInfos
 {
   id: string;
@@ -59,66 +47,82 @@ class GetGroupInfoResponse
   }
 }
 
-interface WsClientAuthenticationData
-{
-  session_token: string;
-}
-
 interface WsClientGetChannelMessages
 {
-  session_token: string;
   channel_id: string;
 }
 
 interface WsClientGetChannelOlderMessages
 {
-  session_token: string;
   channel_id: string;
   lastMessageID: string;
 }
 
 interface WsClientSendMessage
 {
-  session_token: string;
   channel_id: string;
   content: string;
 }
 
 interface WsClientGetGroupInfo
 {
-  session_token: string;
   group_id: string;
 }
 
-async function WsUserIDFromSessionToken(session_token: string): Promise<string | null>
+function disconnectAuthError(socket: Socket)
 {
-  const sessionToken = await prisma.sessionToken.findFirst({ where: { token: session_token } })
-  if (!sessionToken)
-  {
-    return null;
-  }
-
-  return sessionToken.ownerID;
+  socket.emit("credential_error"); 
+  socket.disconnect();
 }
 
-const clients = new Map<string, ConnectedClient>();
+async function WsUserIDFromSessionToken(socket: Socket): Promise<string | undefined>
+{ 
+  const sessionToken = getSessionToken(socket);
+  if (!sessionToken) 
+  { 
+    disconnectAuthError(socket);
+    return; 
+  }
+
+  const storedToken = await prisma.sessionToken.findUnique({ where: { token: sessionToken } })
+
+  if (!storedToken) 
+  { 
+    disconnectAuthError(socket);
+    return; 
+  }
+
+  return storedToken.ownerID;
+}
+
+function getSessionToken(socket: Socket): string | undefined
+{
+  // Check if sessionToken is valid
+  const sessionToken = socket.handshake.headers["x-auth-token"];
+  if (!sessionToken) { return; }
+  const valid =  sessionToken.length > 1 && sessionToken.length < 128 && sessionToken != "" && sessionToken != null && typeof sessionToken == "string"
+  if (!valid) { return; }
+
+  return sessionToken;
+}
+
+// Authentication middleware
+socketApp.use((socket, next) => {
+  if (!getSessionToken(socket))
+  {
+    next(new Error("credential_error"));
+    return;
+  }
+
+  next()
+})
+
 socketApp.on("connection", async (client: Socket) => {
-  client.on("disconnect", () => {
-    clients.delete(client.id);
-  })
-  
   // Authenticates user
-  client.on("authenticate", async (data: any) =>{
-    const authRequest = data as WsClientAuthenticationData;
-    
-    if (authRequest == null || !authRequest.session_token == null) { client.emit("credential_error"); client.disconnect(); return; }
-    
+  client.on("authenticate", async (data: any) =>{    
     // Get UserID from token and check if session token is still valid
-    const userID = await WsUserIDFromSessionToken(authRequest.session_token);
-    if (userID == null) { client.emit("credential_error"); client.disconnect(); return; }
-    
-    clients.set(client.id, new ConnectedClient(client));
-    clients.get(client.id)!.session_token = authRequest.session_token
+    const userID = await WsUserIDFromSessionToken(client);
+    if (userID == null) { return; }
 
     client.emit("auth_success")
     
@@ -126,23 +130,13 @@ socketApp.on("connection", async (client: Socket) => {
 
   // Returns updated friend list
   client.on("get_friend_list", async (data: any) => {
-    const authData = data as WsClientAuthenticationData;
-
-    const session = clients.get(client.id)!;
-    if (authData.session_token != clients.get(client.id)?.session_token || authData.session_token == null || session == null || session.session_token == null) 
-    { 
-      client.emit("credential_error"); 
-      client.disconnect(); 
-      return; 
-    }
-    
     // Get UserID from token and check if session token is still valid
-    const userID = await WsUserIDFromSessionToken(session.session_token);
-    if (userID == null) { client.emit("credential_error"); client.disconnect(); return; }
+    const userID = await WsUserIDFromSessionToken(client);
+    if (userID == null) { return; }
     
     const user = await prisma.user.findUnique({where: { id: userID }});
     
-    if (user == null) { client.emit("credential_error"); client.disconnect(); return; }
+    if (user == null) { disconnectAuthError(client); return; }
 
     const friends = await GetFriends(user.username);
 
@@ -158,20 +152,30 @@ socketApp.on("connection", async (client: Socket) => {
     client.emit("update_channel", channelMessages);
   })
 
-  client.on("get_channel_older", async (data: any) => {
+  client.on("get_channel_older", async (data: any, callback: any) => {
     const request = JSON.parse(data) as WsClientGetChannelOlderMessages;
 
-    console.log(request.lastMessageID)
     const lastMessage = await prisma.message.findFirst({ 
-      where: { channelID: request.channel_id, id: request.lastMessageID },
-      orderBy: { date: "desc" }
-      
-    
+      where: { channelID: request.channel_id }, 
+      orderBy: { date: "desc" }, 
+      take: 20, 
+      cursor: { id: request.lastMessageID } 
     })
 
-    const channelMessages = await prisma.message.findMany({ where: { channelID: request.channel_id }, orderBy: { date: "desc" }, take: 20, cursor: { id: request.lastMessageID } });
+    if (lastMessage?.id == request.lastMessageID)
+    {
+      callback(null);
+      return;
+    }
+
+    const channelMessages = await prisma.message.findMany({ 
+      where: { channelID: request.channel_id }, 
+      orderBy: { date: "desc" }, 
+      take: 20, 
+      cursor: { id: request.lastMessageID } 
+    });
     
-    client.emit("update_channel", channelMessages);
+    callback(channelMessages);
   })
 
   client.on("send_message", async (data: any) => {
@@ -180,8 +184,8 @@ socketApp.on("connection", async (client: Socket) => {
     if (request.content.trim().length == 0) { return; }
 
     // Get UserID from token and check if session token is still valid
-    const userID = await WsUserIDFromSessionToken(request.session_token);
-    if (userID == null) { client.emit("credential_error"); client.disconnect(); return; }
+    const userID = await WsUserIDFromSessionToken(client);
+    if (userID == null) { return; }
 
     const user = await prisma.user.findUnique({ where: { id: userID } })
     if (user == null) { client.emit("credential_error"); client.disconnect(); return; }
@@ -205,19 +209,9 @@ socketApp.on("connection", async (client: Socket) => {
 
   // Returns updated group list
   client.on("get_groups", async (data: any) => {
-    const authData = data as WsClientAuthenticationData;
-
-    const session = clients.get(client.id)!;
-    if (authData.session_token != clients.get(client.id)?.session_token || authData.session_token == null || session == null || session.session_token == null) 
-    { 
-      client.emit("credential_error"); 
-      client.disconnect(); 
-      return; 
-    }
-    
     // Get UserID from token and check if session token is still valid
-    const userID = await WsUserIDFromSessionToken(session.session_token);
-    if (userID == null) { client.emit("credential_error"); client.disconnect(); return; }
+    const userID = await WsUserIDFromSessionToken(client);
+    if (userID == null) { disconnectAuthError(client); return; }
 
     const groups = await prisma.group.findMany({ where: { users: { some: { id: userID } } } })
     
