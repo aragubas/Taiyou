@@ -9,8 +9,8 @@ const props = defineProps<{ windowID: string }>();
 let channelID = ref("");
 
 onMounted(() => {
-  getInstance(props.windowID).title = "Channel";
-  channelID.value = getInstance(props.windowID).arguments[0]
+  getInstance(props.windowID)!.title = "Channel";
+  channelID.value = getInstance(props.windowID)!.arguments[0]
 
   socket.on(`new_message:${channelID.value}`, (data: Message) => {
     messages.value = [ data, ...messages.value ];

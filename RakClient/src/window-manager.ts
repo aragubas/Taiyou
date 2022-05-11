@@ -86,7 +86,7 @@ interface WindowFactoryProperties {
 
 let WindowInstances: Ref<Array<WindowInstance>> = ref(Array<WindowInstance>());
 
-export function getInstance(id: string): WindowInstance {
+export function getInstance(id: string): WindowInstance | undefined {
   return WindowInstances.value.find((window) => window.id === id)!;
 }
 

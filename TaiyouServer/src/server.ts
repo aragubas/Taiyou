@@ -119,13 +119,12 @@ socketApp.use((socket, next) => {
 
 socketApp.on("connection", async (client: Socket) => {
   // Authenticates user
-  client.on("authenticate", async (data: any) =>{    
+  client.on("check_auth", async (data: any) =>{    
     // Get UserID from token and check if session token is still valid
     const userID = await WsUserIDFromSessionToken(client);
     if (userID == null) { return; }
 
     client.emit("auth_success")
-    
   })
 
   // Returns updated friend list

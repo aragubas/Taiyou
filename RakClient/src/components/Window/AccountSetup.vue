@@ -27,11 +27,11 @@ watch(screenID, () =>{
 watch(backbutton_hidden, (newValue: boolean) =>{
   if (!newValue)
   {
-    getInstance(props.windowID).globalMenu?.items.push(new GlobalMenuItem("Back to Start Screen", () => { screenID.value = 0; }));
+    getInstance(props.windowID)!.globalMenu?.items.push(new GlobalMenuItem("Back to Start Screen", () => { screenID.value = 0; }));
 
   }else
   {
-    getInstance(props.windowID).globalMenu?.items.splice(0, getInstance(props.windowID).globalMenu?.items.length);
+    getInstance(props.windowID)!.globalMenu?.items.splice(0, getInstance(props.windowID)!.globalMenu?.items.length);
   }
 })
 
@@ -43,10 +43,10 @@ onMounted(() => {
 
   loginWindowClosed_setter(false);
   
-  getInstance(props.windowID).title = "Account Setup & Authentication";
-  getInstance(props.windowID).resizable = false;
-  getInstance(props.windowID).width = 300;
-  getInstance(props.windowID).width = 400;
+  getInstance(props.windowID)!.title = "Account Setup & Authentication";
+  getInstance(props.windowID)!.resizable = false;
+  getInstance(props.windowID)!.width = 300;
+  getInstance(props.windowID)!.width = 400;
 
   if (localStorage.getItem("credentials") != null)
   {

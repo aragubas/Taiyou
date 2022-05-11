@@ -6,6 +6,7 @@ import { CloseAllWindows, createWindow, getInstance } from "../window-manager";
 export const manager = new Manager("http://localhost:3313", { autoConnect: false, reconnection: false });
 export let socket: Socket = manager.socket("/");
 
+let lastLoginWindowInstance = "";
 let loginWindowClosed: boolean = false;
 export function loginWindowClosed_setter(newValue: boolean | undefined ): boolean
 {
@@ -25,7 +26,7 @@ export function Connect()
 
   socket.connect();
 
-  socket.emit("authenticate")
+  socket.emit("check_auth")
 }
 
 function Disconnected(data?: any)
@@ -42,24 +43,24 @@ function Disconnected(data?: any)
     switch (message)
     {
       case "credential_error":
-        console.log("[ws-api]: Connect error due to credential errors.")
+        console.log("[ws-api] Connect error due to credential errors.")
         break;
     }
   } else
   {
-    console.log("[ws-api]: Disconnected!")
+    console.log("[ws-api] Disconnected!")
   }
 
-  if (loginWindowClosed)
+  if (loginWindowClosed && !getInstance(lastLoginWindowInstance))
   {
-    createWindow({componentPath: "AccountSetup.vue", width: 440, height: 340, closeable: false});
+    lastLoginWindowInstance = createWindow({componentPath: "AccountSetup.vue", width: 440, height: 340, closeable: false});
   }
 }
 
 function handleCredentialsError()
 {
   Disconnected();
-  console.log("[ws-api]: Runtime Credentials error")
+  console.log("[ws-api] Runtime Credentials error")
 }
 
 function handleAuthSuccess()
@@ -67,7 +68,7 @@ function handleAuthSuccess()
   Connected.value = true;
   credentials.value.logged_in = true;
 
-  console.log("[ws-api]: Successfully authenticated");
+  console.log("[ws-api] Successfully authenticated");
 }
 
 socket.on("auth_success", handleAuthSuccess);
