@@ -148,16 +148,10 @@ socketApp.on("connection", async (client: Socket) => {
 
     // Get UserID from token and check if session token is still valid
     const userID = await WsUserIDFromSessionToken(client);
-    if (userID != null) 
-    { 
-      const error = new Error("unauthorized")
-      callback("unauthorized"); 
-      return; 
-    }
-    const parentGroup = await prisma.groupMemberProperties.findUnique( { where: { userID: userID } } )
-
-    
-    
+    if (userID == null)  { return; }
+     
+    const memberProperties = await prisma.groupMemberProperties.findUnique( { where: { userID: userID } } )
+    if (memberProperties == null || memberProperties.isBanned) { callback("unauthorized"); return;  }
 
     const channelMessages = await prisma.message.findMany({ where: { channelID: request.channel_id }, orderBy: { date: "desc" }, take: 20 });
 

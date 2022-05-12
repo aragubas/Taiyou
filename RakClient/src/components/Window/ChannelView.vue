@@ -72,6 +72,13 @@ function UpdateChannelCallback(data: Array<Message> | string)
     return;
   }
 
+  if (data === "error")
+  {
+    error.value = true;
+    error_message.value = "Internal server error."
+    return;
+  }
+
   (data as Array<Message>).forEach(message => {
     addMessage(message);
   })
@@ -120,35 +127,8 @@ function addMessage(message: Message): boolean
     return false;
   }
 
-messages.value.push(message);
-
+  messages.value.push(message);
   return true;
-}
-
-async function RequestOlderMessages(): Promise<number>
-{
-  let newlyloadedMessages = 0;
-  socket.emit("get_channel_older", JSON.stringify({ channel_id: channelID, lastMessageID: messages.value[messages.value.length -1].id }), (response: Array<Message> | null) => {
-    if (response == null) { return; }
-    response.forEach(message => {
-      if (addMessage(message))
-      {
-        newlyloadedMessages++;
-      }
-    })
-
-    console.log(`Loaded new messages ${newlyloadedMessages}`)
-    if (newlyloadedMessages == 0) 
-    { 
-      console.log(`First message loaded`)
-      firstMessageLoaded.value = true; 
-      setTimeout(() => { firstMessageLoaded.value = false }, 42000);
-    }
-
-    olderMessagesLoading.value = false;
-  });
-
-  return newlyloadedMessages;
 }
 
 function loadMoreMessages({loaded}: LoadAction)
@@ -157,10 +137,31 @@ function loadMoreMessages({loaded}: LoadAction)
 
   olderMessagesLoading.value = true;
 
-  RequestOlderMessages().then(() => {
+  socket.emit("get_channel_older", JSON.stringify({ channel_id: channelID, lastMessageID: messages.value[messages.value.length - 1].id }), (response: Array<Message> | null) => {
+    let newlyloadedMessages = 0;
+    
+    if (response == null) { return; }
+
+    response.forEach(message => {
+      if (addMessage(message))
+      {
+        newlyloadedMessages++;
+      }
+    })
+
+    console.log(`Loaded new messages ${newlyloadedMessages}`)
+    
+    firstMessageLoaded.value = newlyloadedMessages == 0;
+    if (newlyloadedMessages == 0)
+    { 
+      console.log(`First message loaded`)
+      setTimeout(() => { firstMessageLoaded.value = false }, 42000);
+    }
+ 
+    console.log("Done loading")
     loaded()
-    olderMessagesLoading.value = false;
-  })
+    olderMessagesLoading.value = false;    
+  });
 }
 
 </script>

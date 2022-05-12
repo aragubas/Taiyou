@@ -67,7 +67,6 @@ model GroupMemberProperties {
 
   permissionString String   @default("member")
   isBanned         Boolean  @default(false)
-  isKicked         Boolean  @default(false)
   joinedAt         DateTime @default(now())
 }
 

@@ -18,7 +18,7 @@ export const Connected = ref(false)
 
 export function Connect()
 {
-  console.log("Connecting...");
+  console.log("[ws-api] Trying to connect...");
   LoadCredentials();
   
   socket.disconnect(); // Makes sure that the socket is disconnected before connecting again
@@ -26,7 +26,7 @@ export function Connect()
 
   socket.connect();
 
-  socket.emit("check_auth")
+  socket.once("connect", () => { socket.emit("check_auth") })
 }
 
 function Disconnected(data?: any)
