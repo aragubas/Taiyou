@@ -25,6 +25,11 @@ model User {
 
   MyGroups   Group[]   @relation("groups")
   MyMessages Message[] @relation("messageOwner")
+
+  directMessageA DirectMessageChannel[] @relation("directMessageA")
+  directMessageB DirectMessageChannel[] @relation("directMessageB")
+
+  GroupMemberProperties GroupMemberProperties[]
 }
 
 model Friends {
@@ -53,6 +58,19 @@ model FriendRequest {
   toID String
 }
 
+model GroupMemberProperties {
+  Group   Group  @relation(fields: [groupID], references: [id])
+  groupID String
+
+  User   User   @relation(fields: [userID], references: [id])
+  userID String @id
+
+  permissionString String   @default("member")
+  isBanned         Boolean  @default(false)
+  isKicked         Boolean  @default(false)
+  joinedAt         DateTime @default(now())
+}
+
 model Group {
   id    String @id @default(uuid())
   name  String @unique
@@ -60,6 +78,17 @@ model Group {
 
   Channels Channel[] @relation("channels")
 
+  GroupMemberProperties GroupMemberProperties[]
+}
+
+model DirectMessageChannel {
+  id String @id @default(uuid())
+
+  userA         User   @relation("directMessageA", fields: [userAUsername], references: [username])
+  userAUsername String
+
+  userB         User   @relation("directMessageB", fields: [userBUsername], references: [username])
+  userBUsername String
 }
 
 model Channel {

@@ -5,14 +5,20 @@ import { socket } from "../../API/ws-api";
 import { credentials } from "../../Credentials";
 import { getInstance } from "../../window-manager";
 import { VueEternalLoading, LoadAction } from '@ts-pro/vue-eternal-loading';
+import LoadingBar from "../LoadingBar.vue";
+import ErrorOverlay from "../Overlays/ErrorOverlay.vue";
 
 const props = defineProps<{ windowID: string }>();
 let channelID = "";
 let firstMessageLoaded = ref(false);
-let initialChannelRequest = ref(false);
+let initialChannelRequestCompleted = ref(false);
 let channelName = ref("");
 let parentGroupName = ref("");
-
+let lastMessageContent = "";
+let lastMessageLoading = ref(false);
+let olderMessagesLoading = ref(false)
+let error = ref(false)
+let error_message = ref("")
 
 onMounted(() => {  
   const windowArguments = getInstance(props.windowID)!.arguments;
@@ -49,24 +55,40 @@ let message = ref("");
 
 function NewMessageCallback(data: Message)
 {
+  if (data.ownerUsername == credentials.value.username && data.content == lastMessageContent)
+  {
+    lastMessageLoading.value = false;
+  }
+
   messages.value = [ data, ...messages.value ];
 }
 
-function UpdateChannelCallback(data: Array<Message>)
+function UpdateChannelCallback(data: Array<Message> | string)
 {
-  console.log("Update Channel")
+  if (data === "unauthorized")
+  {
+    error.value = true;
+    error_message.value = "You are not authorized to view this channel."
+    return;
+  }
 
-  data.forEach(message => {
+  (data as Array<Message>).forEach(message => {
     addMessage(message);
   })
 
-  if (!initialChannelRequest.value) { initialChannelRequest.value = true; }
+  if (!initialChannelRequestCompleted.value) 
+  { 
+    initialChannelRequestCompleted.value = true; 
+  }
 
 }
 
 function sendMessage()
 {
   socket.emit("send_message", JSON.stringify({ channel_id: channelID, content: message.value }))
+   
+  lastMessageContent = message.value;
+  lastMessageLoading.value = true;
   message.value = "";
 }
 
@@ -97,15 +119,14 @@ function addMessage(message: Message): boolean
     console.log("Message already exists");
     return false;
   }
-  messages.value.push(message);
+
+messages.value.push(message);
 
   return true;
 }
 
-function ceira({loaded}: LoadAction)
+async function RequestOlderMessages(): Promise<number>
 {
-  if (messages.value.length < 1 || firstMessageLoaded.value == true) { return; }
-
   let newlyloadedMessages = 0;
   socket.emit("get_channel_older", JSON.stringify({ channel_id: channelID, lastMessageID: messages.value[messages.value.length -1].id }), (response: Array<Message> | null) => {
     if (response == null) { return; }
@@ -116,7 +137,7 @@ function ceira({loaded}: LoadAction)
       }
     })
 
-    console.log(`Loading new messages ${newlyloadedMessages}`)
+    console.log(`Loaded new messages ${newlyloadedMessages}`)
     if (newlyloadedMessages == 0) 
     { 
       console.log(`First message loaded`)
@@ -124,8 +145,22 @@ function ceira({loaded}: LoadAction)
       setTimeout(() => { firstMessageLoaded.value = false }, 42000);
     }
 
-    loaded()
+    olderMessagesLoading.value = false;
   });
+
+  return newlyloadedMessages;
+}
+
+function loadMoreMessages({loaded}: LoadAction)
+{
+  if (messages.value.length < 1 || firstMessageLoaded.value == true || olderMessagesLoading.value == true) { return; }
+
+  olderMessagesLoading.value = true;
+
+  RequestOlderMessages().then(() => {
+    loaded()
+    olderMessagesLoading.value = false;
+  })
 }
 
 </script>
@@ -133,7 +168,9 @@ function ceira({loaded}: LoadAction)
 <template>
   <main>
     <div class="wrapper">
-      <div class="grid">
+      <div class="grid" v-if="!error">
+        <loading-bar :active="!initialChannelRequestCompleted || olderMessagesLoading || lastMessageLoading" :always_visible="true"></loading-bar>
+
         <div class="scrollable">
           <ol :id="`channelview-${channelID}`">
             <li v-for="message in messages" :key="message.id" class="message">
@@ -149,7 +186,7 @@ function ceira({loaded}: LoadAction)
             </div>
           </ol>
           
-          <vue-eternal-loading v-if="initialChannelRequest && !firstMessageLoaded" :load="ceira">
+          <vue-eternal-loading v-if="initialChannelRequestCompleted && !firstMessageLoaded" :load="loadMoreMessages">
             <template #loading>
               <div class="loading-dots">
                 <span v-for="(char, i) in '...'" :key="i" :style="{ 'animation-delay': `${(i * 60).toString()}ms` }">
@@ -171,6 +208,8 @@ function ceira({loaded}: LoadAction)
         </div>
 
       </div>
+
+      <error-overlay :message="error_message" v-if="error"></error-overlay>
     </div>
   </main>
 </template>
@@ -278,7 +317,7 @@ ol
 .grid
 {
   display: grid;
-  grid-template-rows: 1fr 2rem;
+  grid-template-rows: auto 1fr 2rem;
   height: 100%;
 }
 

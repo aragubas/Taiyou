@@ -19,6 +19,7 @@ const props = defineProps({ active: { type: Boolean, required: true }, always_vi
 .loading-bar
 {
   position: absolute;
+  display: block;
   left: 0;
   right: 0;
   top: 0;

@@ -141,10 +141,23 @@ socketApp.on("connection", async (client: Socket) => {
 
     client.emit("update_friend_list", friends)
   })  
-
+ 
   // return all channel messages
   client.on("get_channel", async (data: any, callback: any) => {
     const request = JSON.parse(data) as WsClientGetChannelMessages;
+
+    // Get UserID from token and check if session token is still valid
+    const userID = await WsUserIDFromSessionToken(client);
+    if (userID != null) 
+    { 
+      const error = new Error("unauthorized")
+      callback("unauthorized"); 
+      return; 
+    }
+    const parentGroup = await prisma.groupMemberProperties.findUnique( { where: { userID: userID } } )
+
+    
+    
 
     const channelMessages = await prisma.message.findMany({ where: { channelID: request.channel_id }, orderBy: { date: "desc" }, take: 20 });
 

@@ -17,5 +17,11 @@ const properties = defineProps<{ message: string }>();
   align-items: center;
   justify-content: center;
   height: 100%;
+  text-align: center;
+}
+
+h1
+{
+  font-size: 3rem;
 }
 </style>
