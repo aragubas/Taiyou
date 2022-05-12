@@ -177,6 +177,7 @@ function toggleNotifications() {
 
 .button-icon:hover {
   background: rgb(90, 92, 98);
+  cursor: pointer;
 }
 
 .user-img {

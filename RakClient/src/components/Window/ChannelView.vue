@@ -158,7 +158,7 @@ function loadMoreMessages({loaded}: LoadAction)
       setTimeout(() => { firstMessageLoaded.value = false }, 42000);
     }
  
-    console.log("Done loading")
+    console.log(`Done loading`)
     loaded()
     olderMessagesLoading.value = false;    
   });
@@ -222,6 +222,13 @@ function loadMoreMessages({loaded}: LoadAction)
   0% { opacity: 1; transform: translateY(10%); }
   50% { opacity: 0; transform: translateY(0%); }
   100% { opacity: 1; transform: translateY(10%); }
+}
+
+.channel-start
+{
+  display: flex;
+  height: 1rem;
+  width: 100%;
 }
 
 .loading-dots
@@ -299,7 +306,6 @@ ol
 .scrollable
 {
   overflow-y: scroll;
-  margin-bottom: .5rem;
   display: flex;
   flex-direction: column-reverse;
 }

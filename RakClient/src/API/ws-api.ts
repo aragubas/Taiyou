@@ -25,7 +25,7 @@ export function Connect()
   socket.io.opts.extraHeaders = { "x-auth-token": credentials.value.session_token };
 
   socket.connect();
-
+  
   socket.once("connect", () => { socket.emit("check_auth") })
 }
 

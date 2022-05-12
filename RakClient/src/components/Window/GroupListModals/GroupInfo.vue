@@ -83,8 +83,14 @@ function openChannel(channelID: string)
   <div class="wrapper">
     <LoadingBar :active="loading" :always_visible="true"></LoadingBar>
     <header>
-      <a class="back-arrow" @click="emit('goto', 0)"></a>
-      <h1>{{GroupName}}</h1>
+      <div>
+        <a class="back-arrow" @click="emit('goto', 0)"></a>
+        <h1>{{GroupName}}</h1>
+      </div>
+
+      <div>
+        <img class="button-icon" src="gear.svg" />
+      </div>
     </header>
 
     <ol>
@@ -122,6 +128,21 @@ function openChannel(channelID: string)
   transform: rotate(135deg);
 }
 
+.button-icon {
+  display: flex;
+  align-items: center;
+  width: 1rem;
+  height: 1rem;
+  padding: 0.5rem;
+  background: rgb(60, 62, 68);
+  border-radius: 4px;
+}
+
+.button-icon:hover {
+  background: rgb(70, 72, 78);
+  cursor: pointer;
+}
+
 .back-arrow:hover
 {
   border-color: white;
@@ -156,11 +177,18 @@ ol
 header
 {
   display: flex;
-  gap: .3rem;
+  justify-content: space-between;
   padding: .3rem;
   font-size: .6rem;
   background: rgba(56, 57, 66);
   align-items: center;
+}
+
+header div
+{
+  display: flex;
+  align-items: center;
+  gap: .3rem;
 }
 
 .loading-bar

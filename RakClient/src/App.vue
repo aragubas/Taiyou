@@ -30,6 +30,11 @@ body {
   margin: 0;
 }
 
+.invisible
+{
+  display: none;
+}
+
 *::-webkit-scrollbar {
   width: 0.5rem;
   height: 0.5rem;
