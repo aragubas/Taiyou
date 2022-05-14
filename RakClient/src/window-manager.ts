@@ -23,6 +23,14 @@ export class WindowInstance {
   onMinimize: () => void | undefined = () => {};
   onRestore: () => void | undefined = () => {};
 
+  clearGlobalMenu()
+  {
+    if (this.globalMenu && this.globalMenu.items)
+    {
+      this.globalMenu.items.splice(0, this.globalMenu.items.length);
+    }
+  }
+
   minimize() {
     this.minimized = true;
     this.onMinimize();

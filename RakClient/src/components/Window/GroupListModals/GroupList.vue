@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from "@vue/runtime-dom";
 import { socket, Connected } from "../../../API/ws-api";
+import { GlobalMenuInstance, GlobalMenuItem } from "../../../global-menu";
+import { createWindow, focusWindow, getInstance } from "../../../window-manager";
 import LoadingBar from "../../LoadingBar.vue";
 import ErrorOverlay from "../../Overlays/ErrorOverlay.vue";
 
@@ -9,6 +11,8 @@ let loading = ref(false);
 let requested = false;
 let requestedLoadingBar: number;
 const emit = defineEmits(["goto", "setGroupViewID"])
+const props = defineProps(["windowID"])
+let newGroupInstanceID = "";
 
 socket.on("update_groups", UpdateGroupList);
 
@@ -51,12 +55,37 @@ function onDisconnected()
 onMounted(() => {
   UpdateGroupsTimer = setInterval(RequestGroupList, 2500, null);
 
+  // New group button
+  const window = getInstance(props.windowID);
+  if (window != undefined)
+  {
+      const globalMenu = new GlobalMenuInstance()
+      globalMenu.items.push(new GlobalMenuItem("New Group", () => 
+      { 
+        const windowInstance = getInstance(newGroupInstanceID);
+
+        if (windowInstance == undefined)
+        {
+          newGroupInstanceID = createWindow({ componentPath: "NewGroup.vue" });
+        }else
+        {
+          focusWindow(newGroupInstanceID);
+        }
+        
+      }))
+    
+      window.globalMenu = globalMenu;
+  }
+
   RequestGroupList();
 })
 
 onUnmounted(() => {
   socket.off("disconnected", onDisconnected)
   socket.off("update_groups", UpdateGroupList)
+  
+  getInstance(props.windowID)?.clearGlobalMenu();
+
   clearInterval(UpdateGroupsTimer);
 })
 

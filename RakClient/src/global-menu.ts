@@ -18,7 +18,7 @@ export class GlobalMenuInstance {
   id: string;
   items: GlobalMenuItem[] = [];
 
-  constructor(id: string) {
-    this.id = id;
+  constructor() {
+    this.id = v4();
   }
 }

@@ -90,6 +90,12 @@ button {
   color: inherit;
 }
 
+button:focus {
+  box-shadow: none;
+  text-shadow: 0px 0px 5px white;
+  color: white;
+}
+
 button:hover {
   color: white;
 }

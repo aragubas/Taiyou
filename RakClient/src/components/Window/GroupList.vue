@@ -9,20 +9,29 @@ let screenID = ref(0);
 let groupViewID = ref("")
 
 onMounted(() => {
-  getInstance(props.windowID).title = "Groups";
-  getInstance(props.windowID).closeable = false;
+  const windowInstance = getInstance(props.windowID);
+  
+  if (windowInstance)
+  {
+    windowInstance.title = "Groups";
+    windowInstance.closeable = false;
+  }
 })
 
-function currentView(id: number): any
+function currentView(id: number)
 {
+  const windowInstance = getInstance(props.windowID);
+
+  if (windowInstance == undefined) { return; }
+
   switch(screenID.value)
   {
     case 0:
-      getInstance(props.windowID).title = "Groups";
+      windowInstance.title = "Groups";
       return GroupList
 
     case 1:
-      getInstance(props.windowID).title = "Group Info";
+      windowInstance.title = "Group Info";
       return GroupInfo
 
     default:
@@ -45,7 +54,7 @@ function goto(newScreenID: number)
 <template>
   <div class="wrapper">
     <Transition>
-      <component :is="currentView(screenID)" @goto="goto" @setGroupViewID="setGroupViewID" :groupID="groupViewID"></component>
+      <component :is="currentView(screenID)" :windowID="props.windowID" @goto="goto" @setGroupViewID="setGroupViewID" :groupID="groupViewID"></component>
     </Transition>
   </div>
 
