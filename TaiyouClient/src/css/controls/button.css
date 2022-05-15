@@ -1,0 +1,27 @@
+input[type="button"],
+input[type="submit"],
+button
+{
+  background-color: var(--background-control);
+  border: none;
+  color: var(--text-normal);
+  padding: .25rem .5rem;
+  border-radius: var(--border-s);
+}
+
+input[type="button"]:hover,
+input[type="submit"]:hover,
+button:hover
+{
+  cursor: pointer;
+}
+
+input[type="button"]:focus,
+input[type="submit"]:focus,
+button:focus
+{
+  outline: none;
+  background-color: var(--background-control-active);
+  color: var(--text-active);
+  box-shadow: 0px 0px 5px var(--background-control-active);
+}

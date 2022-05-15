@@ -60,7 +60,7 @@ model FriendRequest {
 
 model GroupMemberProperties {
   Group   Group  @relation(fields: [groupID], references: [id])
-  groupID String @id
+  groupID String
 
   User   User   @relation(fields: [userID], references: [id])
   userID String
@@ -69,7 +69,7 @@ model GroupMemberProperties {
   isBanned         Boolean  @default(false)
   joinedAt         DateTime @default(now())
 
-  @@unique([userID])
+  @@unique([groupID, userID])
 }
 
 model Group {

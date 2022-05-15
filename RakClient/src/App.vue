@@ -35,23 +35,6 @@ body {
   display: none;
 }
 
-*::-webkit-scrollbar {
-  width: 0.5rem;
-  height: 0.5rem;
-  background: rgb(40, 42, 48);
-  border-radius: 0.5rem;
-}
-*::-webkit-scrollbar-thumb {
-  background: rgba(50, 52, 62, 0.9);
-  background-clip: content-box;
-  border-radius: 0.5rem;
-  border: 0.15rem solid transparent;
-}
-
-*::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
 p,
 h1 {
   margin: 0;

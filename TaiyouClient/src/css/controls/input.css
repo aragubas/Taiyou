@@ -1,0 +1,20 @@
+input[type="text"],
+input[type="password"],
+input[type="email"]
+{
+  border: none;
+  color: var(--text-out-focus);
+  background-color: var(--background-control);
+  padding: .25rem;
+  border-radius: var(--border-s);
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus
+{
+  outline: none;
+  background-color: var(--background-control-active);
+  color: white;
+  box-shadow: 0px 0px 5px var(--background-control-active);
+}

@@ -1,0 +1,17 @@
+:root
+{
+  /* Background Colors */
+  --background: rgb(40, 42, 48);
+  --background-panel-low: rgb(50, 52, 62);
+  --background-panel: rgb(60, 62, 72);
+  --background-panel-elevation: rgb(70, 76, 87);
+  --background-control-lower: rgb(60, 62, 72);
+  --background-control: rgb(80, 82, 92);
+  --background-control-active: rgb(120, 122, 142);
+
+  /* Text Colors */
+  --text-disabled: rgb(154, 154, 154);
+  --text-out-focus: rgb(184, 184, 184);
+  --text-normal: rgb(200, 200, 200);
+  --text-active: rgb(243, 243, 243);
+}
