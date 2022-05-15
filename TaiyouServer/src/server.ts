@@ -39,13 +39,15 @@ class GetGroupInfoResponse
   name: string;
   channels: Array<ChannelInfos>
   permissionString: string;
+  membersCount: number;
 
-  constructor(id: string, name: string, channels: Array<ChannelInfos>, permissionString: string)
+  constructor(id: string, name: string, channels: Array<ChannelInfos>, permissionString: string, membersCount: number)
   {
     this.id = id;
     this.name = name;
     this.channels = channels;
     this.permissionString = permissionString;
+    this.membersCount = membersCount;
   }
 }
 
@@ -154,13 +156,12 @@ socketApp.on("connection", async (client: Socket) => {
     
     const channel = await prisma.channel.findUnique({ where: { id: request.channel_id } });
     if (channel == null) { callback("not_found"); return; }
-
     const memberProperties = await prisma.groupMemberProperties.findFirst( { where: { userID: userID, groupID: channel.groupID } } )
     if (memberProperties == null || memberProperties.isBanned) { callback("unauthorized"); return;  }
 
     const channelMessages = await prisma.message.findMany({ where: { channelID: request.channel_id }, orderBy: { date: "desc" }, take: 20 });
 
-    callback(channelMessages);
+    callback({ messages: channelMessages, name: channel.channelName });
   })
 
   client.on("get_channel_older", async (data: any, callback: any) => {
@@ -206,10 +207,12 @@ socketApp.on("connection", async (client: Socket) => {
 
     const memberProperties = await prisma.groupMemberProperties.findFirst( { where: { groupID: groupInfo.id, userID: userID } } )
     if (memberProperties == null || memberProperties.isBanned) { client.emit(`update_group:${request.group_id}`, "unauthorized"); return;  }
+    
+    const channelMembers = await prisma.user.count({ where: { MyGroups: { some: { id: groupInfo.id } } } })
 
     const groupChannels = await prisma.channel.findMany( { where: { groupID: groupInfo.id }  } )
 
-    client.emit(`update_group:${request.group_id}`, new GetGroupInfoResponse(groupInfo.id, groupInfo.name, groupChannels, memberProperties.permissionString));
+    client.emit(`update_group:${request.group_id}`, new GetGroupInfoResponse(groupInfo.id, groupInfo.name, groupChannels, memberProperties.permissionString, channelMembers));
   })
 
   // Returns updated group list

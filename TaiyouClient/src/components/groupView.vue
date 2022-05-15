@@ -9,6 +9,7 @@ let groupID = route.params.groupID;
 const channelsView = ref(true)
 const groupName = ref("Loading...")
 const channelCount = ref(0)
+const memberCount = ref(0)
 let channels = ref(Array<GroupChannel>());
 
 interface GroupChannel
@@ -22,11 +23,14 @@ interface GetGroupInfoResponse
   id: string;
   name: string;
   channels: Array<GroupChannel>;
+  membersCount: number;
 }
 function updateGroup(data: GetGroupInfoResponse)
 {
   groupName.value = data.name;
   channels.value = data.channels;
+  memberCount.value = data.membersCount;
+  console.log(data)
 
   channelCount.value = channels.value.length;
 }
@@ -62,7 +66,7 @@ function gotoChannel(channelID: string)
         <div class="infos-box">
           <div class="icon-info-box">
             <img src="/user.svg" class="icon icon-button" alt="User Icon" />
-            <p>...</p>
+            <p>{{memberCount}}</p>
           </div>
 
           <div class="icon-info-box">
