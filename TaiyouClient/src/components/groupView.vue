@@ -30,7 +30,6 @@ function updateGroup(data: GetGroupInfoResponse)
   groupName.value = data.name;
   channels.value = data.channels;
   memberCount.value = data.membersCount;
-  console.log(data)
 
   channelCount.value = channels.value.length;
 }

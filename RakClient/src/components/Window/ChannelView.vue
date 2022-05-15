@@ -261,19 +261,6 @@ function loadMoreMessages({loaded}: LoadAction)
   background: rgb(60, 62, 68);
 }
 
-.first-message-header
-{
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.first-message-header h1
-{
-  font-size: .8rem;
-  font-weight: normal;
-}
-
 .message h1
 {
   text-align: left;
@@ -293,6 +280,19 @@ function loadMoreMessages({loaded}: LoadAction)
 {
   color: rgb(150, 150, 150);
   font-size: .7rem;
+}
+
+.first-message-header
+{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.first-message-header h1
+{
+  font-size: .8rem;
+  font-weight: normal;
 }
 
 ol

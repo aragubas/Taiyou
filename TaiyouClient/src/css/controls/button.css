@@ -2,6 +2,7 @@ input[type="button"],
 input[type="submit"],
 button
 {
+  display: block;
   background-color: var(--background-control);
   border: none;
   color: var(--text-normal);

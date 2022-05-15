@@ -2,11 +2,13 @@ input[type="text"],
 input[type="password"],
 input[type="email"]
 {
+  display: block;
   border: none;
   color: var(--text-out-focus);
   background-color: var(--background-control);
   padding: .25rem;
   border-radius: var(--border-s);
+  box-sizing: border-box;
 }
 
 input[type="text"]:focus,
