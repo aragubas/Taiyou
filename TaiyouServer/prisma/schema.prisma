@@ -15,6 +15,7 @@ model User {
   username     String         @unique
   email        String         @unique
   password     String
+  IsBanned     Boolean        @default(false)
   SessionToken SessionToken[]
 
   FriendA Friends[] @relation("friendA")

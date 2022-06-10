@@ -11,4 +11,6 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=zumbazumba
 
+    volumes:
+      - ./DB:/var/lib/mysql
     

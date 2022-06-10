@@ -18,8 +18,6 @@ interface CreateUserRequest
   password: string;
 }
 
-
-
 class GetUserResponse extends GenericResponse
 {
   access_token: string;
@@ -118,6 +116,12 @@ router.get("/", async (request, response) =>{
   if (user.password != getUserRequest.password)
   {
     response.status(401).send(new GenericResponse("invalid_credentials"));
+    return;
+  }
+
+  if (user.IsBanned)
+  {
+    response.status(401).send(new GenericResponse("banned"));
     return;
   }
 
