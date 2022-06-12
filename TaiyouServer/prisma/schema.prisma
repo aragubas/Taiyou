@@ -34,17 +34,17 @@ model User {
 }
 
 model Friends {
-  friendA         User   @relation("friendA", fields: [friendAUsername], references: [username])
+  friendA         User   @relation("friendA", fields: [friendAUsername], references: [username], onDelete: Cascade)
   friendAUsername String
 
-  friendB         User   @relation("friendB", fields: [friendBUsername], references: [username])
+  friendB         User   @relation("friendB", fields: [friendBUsername], references: [username], onDelete: Cascade)
   friendBUsername String
 
   @@id([friendAUsername, friendBUsername])
 }
 
 model SessionToken {
-  owner   User   @relation(fields: [ownerID], references: [id])
+  owner   User   @relation(fields: [ownerID], references: [id], onDelete: Cascade)
   ownerID String @id
   token   String @unique
 }
@@ -52,18 +52,18 @@ model SessionToken {
 model FriendRequest {
   id String @id @default(uuid())
 
-  from   User   @relation("MyFriendRequests", fields: [fromID], references: [username])
+  from   User   @relation("MyFriendRequests", fields: [fromID], references: [username], onDelete: Cascade)
   fromID String
 
-  to   User   @relation("FromRequest", fields: [toID], references: [username])
+  to   User   @relation("FromRequest", fields: [toID], references: [username], onDelete: Cascade)
   toID String
 }
 
 model GroupMemberProperties {
-  Group   Group  @relation(fields: [groupID], references: [id])
+  Group   Group  @relation(fields: [groupID], references: [id], onDelete: Cascade)
   groupID String
 
-  User   User   @relation(fields: [userID], references: [id])
+  User   User   @relation(fields: [userID], references: [id], onDelete: Cascade)
   userID String
 
   permissionString String   @default("member")
@@ -86,17 +86,17 @@ model Group {
 model DirectMessageChannel {
   id String @id @default(uuid())
 
-  userA         User   @relation("directMessageA", fields: [userAUsername], references: [username])
+  userA         User   @relation("directMessageA", fields: [userAUsername], references: [username], onDelete: Cascade)
   userAUsername String
 
-  userB         User   @relation("directMessageB", fields: [userBUsername], references: [username])
+  userB         User   @relation("directMessageB", fields: [userBUsername], references: [username], onDelete: Cascade)
   userBUsername String
 }
 
 model Channel {
   id          String @id @default(uuid())
   channelName String @unique
-  Group       Group  @relation("channels", fields: [groupID], references: [id])
+  Group       Group  @relation("channels", fields: [groupID], references: [id], onDelete: Cascade)
   groupID     String
 
   Messages Message[] @relation("messages")
@@ -106,10 +106,10 @@ model Message {
   id      String @id @default(uuid())
   content String
 
-  Channel   Channel @relation("messages", fields: [channelID], references: [id])
+  Channel   Channel @relation("messages", fields: [channelID], references: [id], onDelete: Cascade)
   channelID String
 
-  Owner         User   @relation("messageOwner", fields: [ownerUsername], references: [username])
+  Owner         User   @relation("messageOwner", fields: [ownerUsername], references: [username], onDelete: Cascade)
   ownerUsername String
 
   date DateTime @default(now())
