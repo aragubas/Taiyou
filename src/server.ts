@@ -33,6 +33,19 @@ interface ChannelInfos
   channelName: string;
 }
 
+class GetMeResponse
+{
+  id: string;
+  username: string;
+  full_name: string;
+
+  constructor (id: string, username: string, full_name: string) {
+    this.id = id;
+    this.username = username;
+    this.full_name = full_name;
+  }
+}
+
 class GetGroupInfoResponse
 {
   id: string;
@@ -102,9 +115,10 @@ async function WsUserIDFromSessionToken(socket: Socket): Promise<string | undefi
 function getSessionToken(socket: Socket): string | undefined
 {
   // Check if sessionToken is valid
-  const sessionToken = socket.handshake.headers["x-auth-token"];
+  const sessionToken = socket.request.headers["x-auth-token"];
+
   if (!sessionToken) { return; }
-  const valid =  sessionToken.length > 1 && sessionToken.length < 128 && sessionToken != "" && sessionToken != null && typeof sessionToken == "string"
+  const valid =  sessionToken.length > 1 && sessionToken.length < 128 && typeof(sessionToken) == "string" && sessionToken != "" && sessionToken != null && typeof sessionToken == "string"
   if (!valid) { return; }
 
   return sessionToken;
@@ -128,7 +142,9 @@ socketApp.on("connection", async (client: Socket) => {
     const userID = await WsUserIDFromSessionToken(client);
     if (userID == null) { return; }
 
-    client.emit("auth_success")
+    const user = await prisma.user.findUnique({ where: { id: userID } });
+
+    client.emit("auth_success", new GetMeResponse(user.id, user.username, user.full_name));
   })
 
   // Returns updated friend list

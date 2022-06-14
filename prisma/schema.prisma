@@ -11,12 +11,14 @@ datasource db {
 }
 
 model User {
-  id           String         @id @default(uuid())
-  username     String         @unique
-  email        String         @unique
-  password     String
-  IsBanned     Boolean        @default(false)
-  SessionToken SessionToken[]
+  id            String         @id @default(uuid())
+  username      String         @unique
+  email         String         @unique
+  full_name     String         @default("unnamed")
+  creation_date DateTime       @default(now())
+  password      String
+  IsBanned      Boolean        @default(false)
+  SessionToken  SessionToken[]
 
   FriendA Friends[] @relation("friendA")
   FriendB Friends[] @relation("friendB")

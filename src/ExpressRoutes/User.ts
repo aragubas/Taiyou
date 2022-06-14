@@ -36,7 +36,8 @@ class GetUserResponse extends GenericResponse
 router.post("/", async (request, response) =>{
   const createRequest = (request.body as CreateUserRequest);
 
-  if (request.body == "" || createRequest.email == "" || createRequest.username == "" || createRequest.password == "")
+  if (request.body == "" || createRequest.email == "" || createRequest.username == "" || createRequest.password == "" ||
+      request.body == null || createRequest.email == null || createRequest.username == null || createRequest.password == null)
   {
     response.status(400).json(new GenericResponse("invalid_data"));
     return;
@@ -47,7 +48,7 @@ router.post("/", async (request, response) =>{
   // Check if user already exists
   const userUsername = await prisma.user.findUnique({ where: { username: createRequest.username } });
   const userEmail = await prisma.user.findUnique({ where: { email: createRequest.email } });
-
+  
   if (userUsername != null || userEmail != null)
   {
     response.statusCode = 400;
