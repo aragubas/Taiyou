@@ -56,7 +56,16 @@ router.post("/", async (request, response) =>{
     return;
   }
 
-  const newUser = await prisma.user.create({ data: { email: createRequest.email, password: createRequest.password, username: createRequest.username } })
+  // Check if username or password is valid
+  if (createRequest.username.length < 4 || createRequest.username.length > 12 || createRequest.password.length < 4 || createRequest.password.length > 12)
+  {
+    response.status(400).json(new GenericResponse("invalid_data"));
+    return;
+  }
+  
+  const filtredUsername = `@` + createRequest.username;
+
+  const newUser = await prisma.user.create({ data: { email: createRequest.email, password: createRequest.password, username: filtredUsername } })
 
   response.send(new GetUserResponse(await getUserToken(newUser.id), newUser.id, newUser.username));
 })
