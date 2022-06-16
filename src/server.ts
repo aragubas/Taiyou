@@ -218,6 +218,13 @@ socketApp.on("connection", async (client: Socket) => {
     const userID = await WsUserIDFromSessionToken(client);
     if (userID == null)  { return; }
 
+    if (request.group_id == null || request.group_id == undefined || request.group_id == "")
+    {
+      console.log("Group undefined error")
+      client.emit("group_not_found"); 
+      return;
+    }
+
     const groupInfo = await prisma.group.findUnique({ where: { id: request.group_id } });
     if (groupInfo == null) { client.emit("group_not_found"); return; }
 
