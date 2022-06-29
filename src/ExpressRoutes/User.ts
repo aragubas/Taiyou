@@ -103,7 +103,7 @@ router.get("/", async (request, response) =>{
   // Check if authorization header is present
   if (request.headers.authorization == undefined)
   {
-    response.status(401).send(new GenericResponse("invalid_credentials"));
+    response.status(401).send(new GenericResponse("missing_credentials"));
     return;
   }
   const getUserRequest = BasicAuthHeaderDecode(request.headers.authorization);
@@ -114,7 +114,7 @@ router.get("/", async (request, response) =>{
       email: getUserRequest.username,
     }
   })
-
+ 
   // Check if user exists
   if (user == null)
   {
@@ -128,9 +128,9 @@ router.get("/", async (request, response) =>{
     response.status(401).send(new GenericResponse("invalid_credentials"));
     return;
   }
-
+ 
   if (user.IsBanned)
-  {
+  { 
     response.status(401).send(new GenericResponse("banned"));
     return;
   }

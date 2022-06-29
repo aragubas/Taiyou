@@ -27,7 +27,7 @@ expressApp.use(Cors);
 // User Router
 expressApp.use("/user", UserRouter);
 
-interface ChannelInfos
+interface BasicChannelInfo
 {
   id: string;
   channelName: string;
@@ -50,11 +50,11 @@ class GetGroupInfoResponse
 {
   id: string;
   name: string;
-  channels: Array<ChannelInfos>
+  channels: Array<BasicChannelInfo>
   permissionString: string;
   membersCount: number;
 
-  constructor(id: string, name: string, channels: Array<ChannelInfos>, permissionString: string, membersCount: number)
+  constructor(id: string, name: string, channels: Array<BasicChannelInfo>, permissionString: string, membersCount: number)
   {
     this.id = id;
     this.name = name;
@@ -146,7 +146,7 @@ socketApp.on("connection", async (client: Socket) => {
 
     client.emit("auth_success", new GetMeResponse(user.id, user.username, user.full_name));
   })
-
+ 
   // Returns updated friend list
   client.on("get_friend_list", async (data: any) => {
     // Get UserID from token and check if session token is still valid
@@ -230,7 +230,7 @@ socketApp.on("connection", async (client: Socket) => {
 
     const memberProperties = await prisma.groupMemberProperties.findFirst( { where: { groupID: groupInfo.id, userID: userID } } )
     if (memberProperties == null || memberProperties.isBanned) { client.emit(`update_group:${request.group_id}`, "unauthorized"); return;  }
-    
+     
     const channelMembers = await prisma.user.count({ where: { MyGroups: { some: { id: groupInfo.id } } } })
 
     const groupChannels = await prisma.channel.findMany( { where: { groupID: groupInfo.id }  } )
@@ -246,14 +246,14 @@ socketApp.on("connection", async (client: Socket) => {
 
     const groups = await prisma.group.findMany({ where: { users: { some: { id: userID } } } })
     
-    const newGroupResponse = new GetGroupsResponse(new Array<BasicGroupInfo>());
+    const newGetGroupResponse = new GetGroupsResponse(new Array<BasicGroupInfo>());
 
     for (const group of groups)
     {
-      newGroupResponse.groups.push(new BasicGroupInfo(group.id, group.name));
+      newGetGroupResponse.groups.push(new BasicGroupInfo(group.id, group.name));
     }
 
-    client.emit("update_groups", newGroupResponse)
+    client.emit("update_groups", newGetGroupResponse)
   })
 
 });
