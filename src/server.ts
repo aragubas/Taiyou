@@ -136,7 +136,7 @@ socketApp.use((socket, next) => {
 })
 
 socketApp.on("connection", async (client: Socket) => {
-  // Authenticates user
+  // Check Authentication Request
   client.on("check_auth", async (data: any) =>{    
     // Get UserID from token and check if session token is still valid
     const userID = await WsUserIDFromSessionToken(client);
@@ -146,7 +146,7 @@ socketApp.on("connection", async (client: Socket) => {
 
     client.emit("auth_success", new GetMeResponse(user.id, user.username, user.full_name));
   })
- 
+  
   // Returns updated friend list
   client.on("get_friend_list", async (data: any) => {
     // Get UserID from token and check if session token is still valid
@@ -212,6 +212,9 @@ socketApp.on("connection", async (client: Socket) => {
   })
 
   client.on("get_group_info", async (data: any) =>{
+    // Prevents request without required data
+    if (data == null || data == "") { client.emit("bad_request"); return; }
+     
     const request = JSON.parse(data) as WsClientGetGroupInfo; 
     
     // Get UserID from token and check if session token is still valid
@@ -237,7 +240,7 @@ socketApp.on("connection", async (client: Socket) => {
 
     client.emit(`update_group:${request.group_id}`, new GetGroupInfoResponse(groupInfo.id, groupInfo.name, groupChannels, memberProperties.permissionString, channelMembers));
   })
-
+ 
   // Returns updated group list
   client.on("get_groups", async (data: any) => {
     // Get UserID from token and check if session token is still valid
