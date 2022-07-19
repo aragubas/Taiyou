@@ -215,7 +215,6 @@ socketApp.on("connection", async (client: Socket) => {
     // Prevents request without required data
     if (data == null || data == "") { client.emit("bad_request"); return; }
 
-    console.log(data);
     const request = JSON.parse(data) as WsClientGetGroupInfo; 
     
     // Get UserID from token and check if session token is still valid
